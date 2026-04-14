@@ -3,14 +3,15 @@ import Image from "next/image";
 export default function Home() {
   return (
     <main className="relative min-h-screen text-white">
-      
+
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="/background.jpg"
+          src="/AppIcon_any.png"
           alt="Background"
           fill
           className="object-cover"
+          priority
         />
         <div className="absolute inset-0 bg-black/50" />
       </div>
