@@ -1,13 +1,16 @@
+import Image from "next/image";
+
 export default function Home() {
   return (
     <main className="relative min-h-screen text-white">
       
       {/* Background Image */}
       <div className="absolute inset-0">
-        <img
+        <Image
           src="/background.jpg"
           alt="Background"
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-black/50" />
       </div>
