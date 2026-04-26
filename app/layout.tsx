@@ -28,15 +28,15 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">
-        <header className="border-b border-slate-200 bg-white">
-          <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-6 py-4">
+      <body className="min-h-full flex flex-col text-slate-900">
+        <header className="border-b border-white/50 bg-white/75 backdrop-blur-xl">
+          <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
             <Link href="/" className="text-lg font-semibold tracking-tight">
               MessePilot
             </Link>
             <nav aria-label="Main navigation" className="flex items-center gap-6 text-sm">
               <Link href="/" className="text-slate-700 hover:text-slate-900">
-                MessePilot
+                Home
               </Link>
               <Link href="/privacy" className="text-slate-700 hover:text-slate-900">
                 Privacy
@@ -48,10 +48,10 @@ export default function RootLayout({
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">{children}</main>
+        <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">{children}</main>
 
-        <footer className="border-t border-slate-200 bg-white">
-          <div className="mx-auto w-full max-w-4xl px-6 py-6 text-sm text-slate-600">
+        <footer className="border-t border-white/60 bg-white/80 backdrop-blur-xl">
+          <div className="mx-auto w-full max-w-5xl px-6 py-6 text-sm text-slate-600">
             © 2026 Roger Zutter. MessePilot.
           </div>
         </footer>
