@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -55,6 +56,7 @@ export default function RootLayout({
             © 2026 Roger Zutter. MessePilot.
           </div>
         </footer>
+        <Analytics />
       </body>
     </html>
   );
