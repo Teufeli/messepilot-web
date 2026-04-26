@@ -87,8 +87,8 @@ export default function PrivacyPage() {
         <p className="mt-2 leading-7 text-slate-700">
           For privacy questions or deletion requests, contact:
           {" "}
-          <a className="font-medium text-slate-900 underline" href="mailto:zutter.roger@gmx.ch">
-            zutter.roger@gmx.ch
+          <a className="font-medium text-slate-900 underline" href="mailto:support@messepilot.ch">
+            support@messepilot.ch
           </a>
         </p>
       </div>

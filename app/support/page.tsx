@@ -33,9 +33,9 @@ export default function SupportPage() {
           </p>
           <a
             className="mt-5 inline-flex rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-            href="mailto:zutter.roger@gmx.ch"
+            href="mailto:support@messepilot.ch"
           >
-            zutter.roger@gmx.ch
+            support@messepilot.ch
           </a>
         </div>
 
