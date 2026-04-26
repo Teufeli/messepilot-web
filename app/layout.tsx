@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
+import Image from "next/image";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -32,8 +33,16 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col text-slate-900">
         <header className="border-b border-white/50 bg-white/75 backdrop-blur-xl">
           <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
-            <Link href="/" className="text-lg font-semibold tracking-tight">
-              MessePilot
+            <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+              <Image
+                src="/AppIcon_any.png"
+                alt="MessePilot app icon"
+                width={28}
+                height={28}
+                className="h-7 w-7 rounded-md"
+                priority
+              />
+              <span>MessePilot</span>
             </Link>
             <nav aria-label="Main navigation" className="flex items-center gap-6 text-sm">
               <Link href="/" className="text-slate-700 hover:text-slate-900">
