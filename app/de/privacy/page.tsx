@@ -8,14 +8,24 @@ export const metadata: Metadata = {
 export default function GermanPrivacyPage() {
   return (
     <section className="space-y-8">
-      <div className="rounded-3xl border border-white/70 bg-white/85 p-8 shadow-sm backdrop-blur-xl sm:p-10">
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">
+      <div
+        className="relative overflow-hidden rounded-3xl border border-white/60 bg-slate-950 p-8 shadow-[0_20px_60px_rgba(15,23,42,0.18)] sm:p-10"
+        style={{
+          backgroundImage: "url('/background.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="absolute inset-0 bg-slate-950/55" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/45 to-slate-950/10" />
+        <div className="relative max-w-4xl">
+        <p className="text-sm font-medium uppercase tracking-[0.2em] text-slate-200">
           Datenschutz
         </p>
-        <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+        <h1 className="mt-3 max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
           Datenschutzerklärung
         </h1>
-        <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-700">
+        <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-100">
           MessePilot ist eine App zur Planung von Messebesuchen und zur
           Verwaltung von Messen, Ständen, Notizen, Aufgaben, Kontakten und
           Medienanhängen.
@@ -23,6 +33,7 @@ export default function GermanPrivacyPage() {
         <p className="mt-3 text-sm text-slate-500">
           Zuletzt aktualisiert: 1. Mai 2026
         </p>
+        </div>
       </div>
 
       <div className="max-w-4xl rounded-3xl border border-white/70 bg-white/90 p-8 shadow-sm backdrop-blur-xl sm:p-10">
