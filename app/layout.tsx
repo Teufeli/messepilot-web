@@ -33,13 +33,13 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col text-slate-900">
         <header className="border-b border-white/50 bg-white/75 backdrop-blur-xl">
           <div className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:py-6">
-            <Link href="/" className="flex items-center gap-3 text-2xl font-semibold tracking-tight sm:gap-6 sm:text-5xl">
+            <Link href="/" className="flex items-center gap-3 text-2xl font-semibold tracking-tight sm:gap-5 sm:text-4xl">
               <Image
                 src="/messepilot-app-icon.png"
                 alt="MessePilot app icon"
-                width={128}
-                height={128}
-                className="h-16 w-16 rounded-2xl sm:h-32 sm:w-32 sm:rounded-[2rem]"
+                width={96}
+                height={96}
+                className="h-16 w-16 rounded-2xl sm:h-24 sm:w-24 sm:rounded-3xl"
                 priority
               />
               <span>MessePilot</span>
@@ -47,6 +47,9 @@ export default function RootLayout({
             <nav aria-label="Main navigation" className="flex w-full items-center justify-center gap-6 text-sm sm:w-auto sm:justify-end">
               <Link href="/" className="text-slate-700 hover:text-slate-900">
                 Home
+              </Link>
+              <Link href="/faq" className="text-slate-700 hover:text-slate-900">
+                FAQ
               </Link>
               <Link href="/privacy" className="text-slate-700 hover:text-slate-900">
                 Privacy

@@ -25,19 +25,21 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="max-w-3xl space-y-4">
         <Link
-          href="/privacy"
-          className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+          href="mailto:support@messepilot.ch?subject=MessePilot%20Beta%20Access%20Request&body=Hello%20MessePilot%20Team%2C%0A%0AI%20would%20like%20to%20request%20access%20to%20the%20MessePilot%20beta.%0A%0AName%3A%0ACompany%3A%0ARole%3A%0ACountry%3A%0ADevice%3A%0AReason%20for%20beta%20access%3A%0A%0AI%20understand%20that%20MessePilot%20is%20currently%20in%20private%20beta.%20I%20agree%20not%20to%20publicly%20share%20screenshots%2C%20unpublished%20features%2C%20internal%20test%20details%20or%20access%20links%20without%20prior%20permission.%0A%0ABest%20regards%0A"
+          className="inline-flex rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
         >
-          Privacy Policy
+          Request Beta Access
         </Link>
-        <Link
-          href="/support"
-          className="rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-900 transition hover:bg-slate-100"
-        >
-          Support
-        </Link>
+        <p className="max-w-2xl text-sm leading-6 text-slate-600">
+          MessePilot is currently in private beta. Access is reviewed manually.
+          By requesting access, you agree that the information you provide may
+          be used to review your beta request, contact you about MessePilot and
+          manage your beta access. You also agree not to publicly share
+          screenshots, unpublished features, internal test details or access
+          links without prior permission.
+        </p>
       </div>
     </section>
   );

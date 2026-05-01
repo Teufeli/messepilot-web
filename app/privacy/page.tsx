@@ -19,7 +19,7 @@ export default function PrivacyPage() {
           MessePilot is a trade fair planning app for managing fairs, booths,
           notes, tasks, contacts and media attachments.
         </p>
-        <p className="mt-3 text-sm text-slate-500">Last updated: April 26, 2026</p>
+        <p className="mt-3 text-sm text-slate-500">Last updated: May 1, 2026</p>
       </div>
 
       <div className="max-w-4xl rounded-3xl border border-white/70 bg-white/90 p-8 shadow-sm backdrop-blur-xl sm:p-10">
@@ -69,6 +69,28 @@ export default function PrivacyPage() {
           MessePilot may collect basic analytics and diagnostic information to
           understand app usage, improve stability and fix issues. This
           information is not used for third-party advertising.
+        </p>
+
+        <h2 className="mt-8 text-2xl font-semibold text-slate-950">Beta Access Requests</h2>
+        <p className="mt-2 leading-7 text-slate-700">
+          If you request access to the MessePilot private beta, we may process
+          the information you provide in your request, such as your name, email
+          address, company, role, country, device information and reason for
+          requesting beta access.
+        </p>
+        <p className="mt-2 leading-7 text-slate-700">
+          We use this information to review your request, contact you about
+          MessePilot, manage beta access, invite approved testers and protect
+          the integrity of the private beta. Access to the beta is reviewed
+          manually and is not guaranteed.
+        </p>
+        <p className="mt-2 leading-7 text-slate-700">
+          Information submitted with a beta access request may be kept for as
+          long as needed to manage the beta program, handle related
+          communication, document access decisions and protect against misuse.
+          You may request deletion of your beta access request data by
+          contacting support@messepilot.ch, unless retention is required for
+          technical, security or legal reasons.
         </p>
 
         <h2 className="mt-8 text-2xl font-semibold text-slate-950">No Sale of User Data</h2>
