@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import Image from "next/image";
 import Link from "next/link";
+import HeaderNavigation from "./HeaderNavigation";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -44,36 +45,7 @@ export default function RootLayout({
               />
               <span>MessePilot</span>
             </Link>
-            <div className="flex w-full flex-col items-center gap-3 sm:w-auto sm:items-end">
-              <nav aria-label="Main navigation" className="flex flex-wrap items-center justify-center gap-6 text-sm sm:justify-end">
-                <Link href="/" className="text-slate-700 hover:text-slate-900">
-                  Home
-                </Link>
-                <Link href="/faq" className="text-slate-700 hover:text-slate-900">
-                  FAQ
-                </Link>
-                <Link href="/privacy" className="text-slate-700 hover:text-slate-900">
-                  Privacy
-                </Link>
-                <Link href="/support" className="text-slate-700 hover:text-slate-900">
-                  Support
-                </Link>
-              </nav>
-
-              <nav aria-label="Language selection" className="flex items-center gap-2 text-xs font-medium text-slate-500">
-                <Link href="/" className="rounded-full px-2 py-1 transition hover:bg-white/70 hover:text-slate-900">
-                  EN
-                </Link>
-                <span aria-hidden="true">·</span>
-                <Link href="/de" className="rounded-full px-2 py-1 transition hover:bg-white/70 hover:text-slate-900">
-                  DE
-                </Link>
-                <span aria-hidden="true">·</span>
-                <Link href="/ja" className="rounded-full px-2 py-1 transition hover:bg-white/70 hover:text-slate-900">
-                  JA
-                </Link>
-              </nav>
-            </div>
+            <HeaderNavigation />
           </div>
         </header>
 
