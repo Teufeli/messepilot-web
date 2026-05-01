@@ -76,11 +76,28 @@ export default function JapanesePrivacyPage() {
           写真、動画、書類
         </h2>
         <p className="mt-2 leading-7 text-slate-700">
-          写真、動画、書類は、Firebase Storage または Firestore にバイナリファイルとして保存されません。
-          メディアおよび書類ファイルは、OS によって有効化されている場合、ユーザーの端末上および／またはユーザーのプライベート iCloud コンテナに保存されます。
+          現在の構成では、MessePilot は写真、動画、書類を実際のファイルとして
+          MessePilot または Firebase のサーバーへアップロードしません。
+          メディアおよび書類ファイルは、OS によって有効化されている場合、
+          ユーザーの端末上および／またはユーザーのプライベート iCloud コンテナに保存されます。
         </p>
         <p className="mt-2 leading-7 text-slate-700">
-          Firestore は、ブースデータや添付ファイル参照を正しいユーザーおよびブースに関連付けるために必要なメタデータを保存する場合があります。
+          MessePilot およびそのスタッフは、ユーザーが保存した写真、動画、書類の内容を閲覧できません。
+          Firestore には、内部ID、ファイル種類、ステータス、ファイルサイズ、関連するブースとの紐付けなど、
+          技術的な情報と参照が保存される場合があります。これにより、アプリは添付ファイルを正しく表示し、
+          適切なブースに関連付けることができます。
+        </p>
+
+        <h2 className="mt-8 text-2xl font-semibold text-slate-950">
+          ユーザーコンテンツに関する責任
+        </h2>
+        <p className="mt-2 leading-7 text-slate-700">
+          MessePilot に入力、保存、処理、共有、またはその他の方法で利用する情報、
+          メモ、連絡先、ファイル、画像、動画、書類、その他のコンテンツについては、
+          ユーザー自身が責任を負います。MessePilot は技術的なアプリ機能を提供するものであり、
+          ユーザー生成コンテンツの正確性または合法性を審査するものではありません。
+          MessePilot は、そのようなコンテンツ、その合法性、正確性、完全性、利用、
+          または利用の結果について責任または法的責任を負いません。
         </p>
 
         <h2 className="mt-8 text-2xl font-semibold text-slate-950">

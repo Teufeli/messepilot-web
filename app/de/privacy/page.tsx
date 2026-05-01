@@ -87,15 +87,34 @@ export default function GermanPrivacyPage() {
           Fotos, Videos und Dokumente
         </h2>
         <p className="mt-2 leading-7 text-slate-700">
-          Fotos, Videos und Dokumente werden nicht als Binärdateien in Firebase
-          Storage oder Firestore gespeichert. Medien- und Dokumentdateien werden
-          lokal auf dem Gerät des Nutzers und/oder im privaten iCloud-Container
-          des Nutzers gespeichert, sofern dies durch das Betriebssystem aktiviert
+          In der aktuellen Architektur lädt MessePilot Fotos, Videos und
+          Dokumente nicht als eigentliche Dateien auf MessePilot- oder
+          Firebase-Server hoch. Medien- und Dokumentdateien bleiben lokal auf
+          dem Gerät des Nutzers und/oder im privaten iCloud-Container des
+          Nutzers gespeichert, sofern dies durch das Betriebssystem aktiviert
           ist.
         </p>
         <p className="mt-2 leading-7 text-slate-700">
-          Firestore kann Metadaten speichern, die benötigt werden, um Standdaten
-          und Anhangsreferenzen dem richtigen Nutzer und Stand zuzuordnen.
+          MessePilot und dessen Mitarbeitende können die Inhalte von Fotos,
+          Videos oder Dokumenten, die Nutzer speichern, nicht einsehen.
+          Firestore kann technische Informationen und Referenzen speichern, zum
+          Beispiel eine interne ID, Dateityp, Status, Dateigröße oder die
+          Zuordnung zu einem Stand, damit die App Anhänge korrekt anzeigen und
+          dem richtigen Stand zuordnen kann.
+        </p>
+
+        <h2 className="mt-8 text-2xl font-semibold text-slate-950">
+          Verantwortung für Nutzerinhalte
+        </h2>
+        <p className="mt-2 leading-7 text-slate-700">
+          Nutzer sind selbst dafür verantwortlich, welche Informationen,
+          Notizen, Kontakte, Dateien, Bilder, Videos, Dokumente oder sonstigen
+          Inhalte sie in MessePilot eingeben, speichern, verarbeiten, teilen
+          oder weiterverwenden. MessePilot stellt die technische
+          App-Funktionalität bereit, prüft nutzergenerierte Inhalte nicht auf
+          Richtigkeit oder Rechtmäßigkeit und kann für solche Inhalte, deren
+          Rechtmäßigkeit, Richtigkeit, Vollständigkeit, Nutzung oder Folgen der
+          Nutzung nicht verantwortlich oder haftbar gemacht werden.
         </p>
 
         <h2 className="mt-8 text-2xl font-semibold text-slate-950">

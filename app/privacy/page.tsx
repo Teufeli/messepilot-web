@@ -65,14 +65,29 @@ export default function PrivacyPage() {
 
         <h2 className="mt-8 text-2xl font-semibold text-slate-950">Photos, Videos and Documents</h2>
         <p className="mt-2 leading-7 text-slate-700">
-          Photos, videos and documents are not stored in Firebase Storage or
-          Firestore as binary files. Media and document files are stored locally
-          on the user&apos;s device and/or in the user&apos;s private iCloud
-          container when enabled by the operating system.
+          In the current architecture, MessePilot does not upload photos,
+          videos or documents as actual files to MessePilot or Firebase servers.
+          Media and document files remain on the user&apos;s device and/or in the
+          user&apos;s private iCloud container when enabled by the operating
+          system.
         </p>
         <p className="mt-2 leading-7 text-slate-700">
-          Firestore may store metadata needed to link booth data and attachment
-          references to the correct user and booth.
+          MessePilot and its staff cannot view the contents of photos, videos or
+          documents stored by users. Firestore may store technical information
+          and references, such as an internal ID, file type, status, file size or
+          the link to the related booth, so the app can display attachments
+          correctly and connect them to the right booth.
+        </p>
+
+        <h2 className="mt-8 text-2xl font-semibold text-slate-950">User Content Responsibility</h2>
+        <p className="mt-2 leading-7 text-slate-700">
+          Users are responsible for the information, notes, contacts, files,
+          images, videos, documents or other content they enter, store, process,
+          share or otherwise use in MessePilot. MessePilot provides the
+          technical app functionality, does not review user-generated content for
+          correctness or legality and cannot be held responsible or liable for
+          such content, its legality, accuracy, completeness, use or any
+          consequences of its use.
         </p>
 
         <h2 className="mt-8 text-2xl font-semibold text-slate-950">Analytics and Diagnostics</h2>

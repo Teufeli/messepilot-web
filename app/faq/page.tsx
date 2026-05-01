@@ -45,7 +45,22 @@ const faqSections = [
           {
             question: "Which sign-in methods are supported?",
             answer:
-              "Depending on the app version, MessePilot may support Sign in with Apple, Google Sign-In and email/password login.",
+              "Depending on the app version, MessePilot supports Sign in with Apple and email/password login. Google Sign-In is planned and may be added in a future version.",
+          },
+          {
+            question: "Can I use MessePilot on multiple devices?",
+            answer:
+              "MessePilot is currently focused on the Apple ecosystem, including iPhone and iPad. You can sign in with the same account on supported Apple devices. Android is planned for a future version, but is not currently part of the supported platform scope.",
+          },
+          {
+            question: "What happens if I use Sign in with Apple and hide my email address?",
+            answer:
+              "If you use Sign in with Apple and choose to hide your email address, Apple may provide a private relay email address. MessePilot will use the email address provided by Apple for account-related communication where applicable.",
+          },
+          {
+            question: "Why can my access be restricted?",
+            answer:
+              "Access may be restricted in cases such as misuse, spam, fake accounts, security risks or violations of beta or usage conditions.",
           },
           {
             question: "How can I delete my account?",
@@ -97,6 +112,21 @@ const faqSections = [
             answer:
               "MessePilot focuses on factual trade fair information such as name, city, country, date, venue, category and official website links. Important details should always be checked on the official fair website.",
           },
+          {
+            question: "Is MessePilot responsible for content on linked websites?",
+            answer:
+              "No. MessePilot may link to external websites such as official fair websites, organizer pages or other third-party sources. MessePilot is not responsible or liable for the content, availability, accuracy, timeliness or changes on external websites.",
+          },
+          {
+            question: "Is MessePilot officially affiliated with listed trade fairs?",
+            answer:
+              "Not automatically. MessePilot may link to official fair websites, but is not automatically an official representative, organizer or partner of a listed trade fair unless explicitly stated.",
+          },
+          {
+            question: "Can I report incorrect fair information?",
+            answer:
+              "Yes. If you notice incorrect or outdated fair information, you can contact MessePilot at support@messepilot.ch or info@messepilot.ch.",
+          },
         ],
       },
     ],
@@ -132,6 +162,16 @@ const faqSections = [
             answer:
               "No. Booth contacts are entries created inside MessePilot. MessePilot does not need to import your device address book for this.",
           },
+          {
+            question: "Can I export booth contacts to my phone contacts?",
+            answer:
+              "Depending on the app version, you may be able to export booth contacts to your device address book or use native sharing options. Export only happens through a deliberate user action and not automatically.",
+          },
+          {
+            question: "Can I use booth contacts for follow-ups?",
+            answer:
+              "Yes. Booth contacts help you remember people, conversations and next steps after a trade fair.",
+          },
         ],
       },
       {
@@ -160,7 +200,22 @@ const faqSections = [
           {
             question: "Are my files stored on MessePilot servers?",
             answer:
-              "In the current architecture, MessePilot does not store media or document files as binary files in Firebase Storage or Firestore. MessePilot may store related metadata so files can be linked to the correct booth.",
+              "In the current architecture, MessePilot does not upload your photos, videos or documents as actual files to MessePilot or Firebase servers. The files remain on your device and/or in your private iCloud container. MessePilot and its staff cannot view the contents of your photos, videos or documents. Firestore only stores technical information and references, such as an internal ID, file type, status, file size or the link to the related booth. This information helps the app display attachments correctly and connect them to the right booth.",
+          },
+          {
+            question: "Can I add third-party brochures, logos or images?",
+            answer:
+              "You should only add files that you are allowed to store and use. Users are responsible for ensuring that stored or processed content does not infringe third-party rights. MessePilot does not grant rights to copyrighted material such as logos, brochures, images or third-party documents.",
+          },
+          {
+            question: "What happens if I delete an attachment?",
+            answer:
+              "When an attachment is deleted, MessePilot may update or remove the related metadata and hide or remove the attachment in the app. Deleted data and removed files cannot be restored by MessePilot or its staff. Files stored locally or in iCloud may additionally depend on operating system behavior and your iCloud settings.",
+          },
+          {
+            question: "What happens if a file is missing on my device?",
+            answer:
+              "If a file is not available locally, MessePilot may try to make it available from your private iCloud container if it exists there and iCloud is functioning correctly.",
           },
         ],
       },
@@ -201,6 +256,26 @@ const faqSections = [
             answer:
               "No. MessePilot does not use user data for third-party advertising.",
           },
+          {
+            question: "Who can see my personal planning data?",
+            answer:
+              "Your personal planning data is linked to your account and is not intended to be visible to other users. MessePilot and its staff cannot view your personal planning content such as booth data, notes, tasks, contacts or media content. Access is limited by technical and security rules.",
+          },
+          {
+            question: "Can deleted data be restored?",
+            answer:
+              "No. Data deleted by the user or removed as part of account deletion cannot be restored by MessePilot or its staff. Technical backups or system-level copies may exist for a limited time, but they are not intended as a recovery service for users.",
+          },
+          {
+            question: "Is MessePilot responsible for content users store or process in the app?",
+            answer:
+              "No. Users are responsible for the information, notes, contacts, files, images, videos, documents or other content they enter, store, process or use in MessePilot. MessePilot only provides the technical app functionality and cannot be held responsible or liable for user-generated content, its legality, accuracy, completeness or use.",
+          },
+          {
+            question: "Where can I find the privacy policy?",
+            answer:
+              "You can find the privacy policy on the MessePilot website in the Privacy section.",
+          },
         ],
       },
     ],
@@ -227,6 +302,21 @@ const faqSections = [
               "MessePilot is currently in beta and early release preparation. Features, design and availability may change as the app improves.",
           },
           {
+            question: "How can I request beta access?",
+            answer:
+              "You can request beta access by email through the MessePilot website. Access is reviewed manually and is not automatically guaranteed.",
+          },
+          {
+            question: "Is beta access guaranteed?",
+            answer:
+              "No. MessePilot is currently in private beta. Requests are reviewed manually and access may be declined depending on test phase, capacity, target group or security considerations.",
+          },
+          {
+            question: "Can I share screenshots, TestFlight links or unpublished features?",
+            answer:
+              "No. Private beta content, screenshots, unpublished features, internal test details and access links may not be published, forwarded or shared with third parties without prior written permission.",
+          },
+          {
             question: "How can I send feedback?",
             answer:
               "You can send feedback through TestFlight where available or contact support at support@messepilot.ch.",
@@ -245,6 +335,16 @@ const faqSections = [
             question: "How can trade fair organizers or partners contact MessePilot?",
             answer:
               "For general, business or organizer-related questions, contact info@messepilot.ch.",
+          },
+          {
+            question: "What should I include in a support request?",
+            answer:
+              "If possible, include your device type, iOS version, app version, a short description of the issue and screenshots if helpful.",
+          },
+          {
+            question: "Is support available in all languages?",
+            answer:
+              "MessePilot supports multiple app languages. Support responses may not always be available immediately in every language.",
           },
         ],
       },
