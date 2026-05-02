@@ -64,7 +64,14 @@ function getLocalizedPath(
 export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const currentLanguage = getCurrentLanguage(pathname, languages);
+
+  const sortedLanguages = [...languages].sort((a, b) =>
+    a.nativeName.localeCompare(b.nativeName, undefined, {
+      sensitivity: "base",
+    }),
+  );
+
+  const currentLanguage = getCurrentLanguage(pathname, sortedLanguages);
 
   if (!currentLanguage) {
     return null;
@@ -79,17 +86,19 @@ export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
       <select
         value={currentLanguage.languageCode}
         onChange={(event) => {
-          const selectedLanguage = languages.find(
+          const selectedLanguage = sortedLanguages.find(
             (language) => language.languageCode === event.target.value,
           );
 
           if (selectedLanguage) {
-            router.push(getLocalizedPath(pathname, selectedLanguage, languages));
+            router.push(
+              getLocalizedPath(pathname, selectedLanguage, sortedLanguages),
+            );
           }
         }}
         className="bg-transparent text-sm font-semibold text-slate-800 outline-none"
       >
-        {languages.map((language) => (
+        {sortedLanguages.map((language) => (
           <option key={language.languageCode} value={language.languageCode}>
             {language.nativeName}
           </option>
