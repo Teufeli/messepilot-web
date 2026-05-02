@@ -1,14 +1,43 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import type { WebsiteLanguage } from "@/lib/websiteLanguages";
 
-const locales = ["de", "ja"] as const;
+type LanguageSwitcherProps = {
+  languages: WebsiteLanguage[];
+};
 
-function getPathWithoutLocale(pathname: string) {
+function getCurrentLanguage(
+  pathname: string,
+  languages: WebsiteLanguage[],
+): WebsiteLanguage {
+  const firstSegment = pathname.split("/").filter(Boolean)[0];
+
+  return (
+    languages.find(
+      (language) =>
+        language.routePrefix === firstSegment ||
+        language.languageCode === firstSegment,
+    ) ||
+    languages.find((language) => language.isFallback) ||
+    languages[0]
+  );
+}
+
+function getPathWithoutLocale(
+  pathname: string,
+  languages: WebsiteLanguage[],
+): string {
   const segments = pathname.split("/").filter(Boolean);
+  const firstSegment = segments[0];
 
-  if (segments.length > 0 && locales.includes(segments[0] as (typeof locales)[number])) {
+  const hasLocalePrefix = languages.some(
+    (language) =>
+      language.routePrefix === firstSegment ||
+      language.languageCode === firstSegment,
+  );
+
+  if (segments.length > 0 && hasLocalePrefix) {
     const rest = segments.slice(1).join("/");
     return rest ? `/${rest}` : "/";
   }
@@ -16,44 +45,56 @@ function getPathWithoutLocale(pathname: string) {
   return pathname || "/";
 }
 
-function getLocalizedPath(pathname: string, locale: "en" | "de" | "ja") {
-  const basePath = getPathWithoutLocale(pathname);
+function getLocalizedPath(
+  pathname: string,
+  language: WebsiteLanguage,
+  languages: WebsiteLanguage[],
+): string {
+  const basePath = getPathWithoutLocale(pathname, languages);
 
-  if (locale === "en") {
+  if (language.isFallback || language.routePrefix === "") {
     return basePath;
   }
 
-  return basePath === "/" ? `/${locale}` : `/${locale}${basePath}`;
+  return basePath === "/"
+    ? `/${language.routePrefix}`
+    : `/${language.routePrefix}${basePath}`;
 }
 
-export default function LanguageSwitcher() {
+export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const currentLanguage = getCurrentLanguage(pathname, languages);
+
+  if (!currentLanguage) {
+    return null;
+  }
 
   return (
-    <nav
-      aria-label="Language selection"
-      className="flex items-center gap-2 text-xs font-medium text-slate-500"
-    >
-      <Link
-        href={getLocalizedPath(pathname, "en")}
-        className="rounded-full px-2 py-1 transition hover:bg-white/70 hover:text-slate-900"
+    <label className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/85 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm backdrop-blur">
+      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
+        Language
+      </span>
+
+      <select
+        value={currentLanguage.languageCode}
+        onChange={(event) => {
+          const selectedLanguage = languages.find(
+            (language) => language.languageCode === event.target.value,
+          );
+
+          if (selectedLanguage) {
+            router.push(getLocalizedPath(pathname, selectedLanguage, languages));
+          }
+        }}
+        className="bg-transparent text-sm font-semibold text-slate-800 outline-none"
       >
-        EN
-      </Link>
-      <span aria-hidden="true">·</span>
-      <Link
-        href={getLocalizedPath(pathname, "de")}
-        className="rounded-full px-2 py-1 transition hover:bg-white/70 hover:text-slate-900"
-      >
-        DE
-      </Link>
-      <span aria-hidden="true">·</span>
-      <Link
-        href={getLocalizedPath(pathname, "ja")}
-        className="rounded-full px-2 py-1 transition hover:bg-white/70 hover:text-slate-900"
-      >
-        JA
-      </Link>
-    </nav>
+        {languages.map((language) => (
+          <option key={language.languageCode} value={language.languageCode}>
+            {language.nativeName}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
