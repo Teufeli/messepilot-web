@@ -86,6 +86,19 @@ function getLocalizedPath(
     : `/${language.routePrefix}${basePath}`;
 }
 
+function languageLabel(languageCode: string): string {
+  switch (languageCode) {
+    case "de":
+      return "SPRACHE";
+    case "ja":
+      return "言語";
+    case "fr":
+      return "LANGUE";
+    default:
+      return "LANGUAGE";
+  }
+}
+
 export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -116,7 +129,7 @@ export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
   return (
     <label className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/85 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm backdrop-blur">
       <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
-        Language
+        {languageLabel(currentLanguage.languageCode)}
       </span>
 
       <select
