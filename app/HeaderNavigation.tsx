@@ -71,21 +71,43 @@ const labels: Record<
   },
 };
 
+function isLocaleLikeSegment(segment: string | undefined): boolean {
+  return Boolean(segment && /^[a-z]{2}(-[a-z]{2})?$/i.test(segment));
+}
+
+function temporaryLanguageForLocale(locale: string): WebsiteLanguage {
+  return {
+    languageCode: locale,
+    displayName: locale.toUpperCase(),
+    nativeName: locale.toUpperCase(),
+    flagEmoji: "",
+    routePrefix: locale,
+    sortOrder: Number.MAX_SAFE_INTEGER,
+    isFallback: false,
+  };
+}
+
 function getCurrentLanguage(
   pathname: string,
   languages: WebsiteLanguage[],
 ): WebsiteLanguage {
   const firstSegment = pathname.split("/").filter(Boolean)[0];
 
-  return (
-    languages.find(
-      (language) =>
-        language.routePrefix === firstSegment ||
-        language.languageCode === firstSegment,
-    ) ||
-    languages.find((language) => language.isFallback) ||
-    languages[0]
+  const matchedLanguage = languages.find(
+    (language) =>
+      language.routePrefix === firstSegment ||
+      language.languageCode === firstSegment,
   );
+
+  if (matchedLanguage) {
+    return matchedLanguage;
+  }
+
+  if (isLocaleLikeSegment(firstSegment)) {
+    return temporaryLanguageForLocale(firstSegment);
+  }
+
+  return languages.find((language) => language.isFallback) || languages[0];
 }
 
 function localizedPath(language: WebsiteLanguage, path: string): string {

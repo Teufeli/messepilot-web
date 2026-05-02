@@ -7,21 +7,43 @@ type LanguageSwitcherProps = {
   languages: WebsiteLanguage[];
 };
 
+function isLocaleLikeSegment(segment: string | undefined): boolean {
+  return Boolean(segment && /^[a-z]{2}(-[a-z]{2})?$/i.test(segment));
+}
+
+function temporaryLanguageForLocale(locale: string): WebsiteLanguage {
+  return {
+    languageCode: locale,
+    displayName: locale.toUpperCase(),
+    nativeName: locale.toUpperCase(),
+    flagEmoji: "",
+    routePrefix: locale,
+    sortOrder: Number.MAX_SAFE_INTEGER,
+    isFallback: false,
+  };
+}
+
 function getCurrentLanguage(
   pathname: string,
   languages: WebsiteLanguage[],
 ): WebsiteLanguage {
   const firstSegment = pathname.split("/").filter(Boolean)[0];
 
-  return (
-    languages.find(
-      (language) =>
-        language.routePrefix === firstSegment ||
-        language.languageCode === firstSegment,
-    ) ||
-    languages.find((language) => language.isFallback) ||
-    languages[0]
+  const matchedLanguage = languages.find(
+    (language) =>
+      language.routePrefix === firstSegment ||
+      language.languageCode === firstSegment,
   );
+
+  if (matchedLanguage) {
+    return matchedLanguage;
+  }
+
+  if (isLocaleLikeSegment(firstSegment)) {
+    return temporaryLanguageForLocale(firstSegment);
+  }
+
+  return languages.find((language) => language.isFallback) || languages[0];
 }
 
 function getPathWithoutLocale(
@@ -31,11 +53,14 @@ function getPathWithoutLocale(
   const segments = pathname.split("/").filter(Boolean);
   const firstSegment = segments[0];
 
-  const hasLocalePrefix = languages.some(
+  const hasKnownLocalePrefix = languages.some(
     (language) =>
       language.routePrefix === firstSegment ||
       language.languageCode === firstSegment,
   );
+
+  const hasLocalePrefix =
+    hasKnownLocalePrefix || isLocaleLikeSegment(firstSegment);
 
   if (segments.length > 0 && hasLocalePrefix) {
     const rest = segments.slice(1).join("/");
@@ -65,13 +90,24 @@ export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const sortedLanguages = [...languages].sort((a, b) =>
+  const currentLanguage = getCurrentLanguage(pathname, languages);
+
+  const availableLanguages = [...languages];
+
+  if (
+    currentLanguage &&
+    !availableLanguages.some(
+      (language) => language.languageCode === currentLanguage.languageCode,
+    )
+  ) {
+    availableLanguages.push(currentLanguage);
+  }
+
+  const sortedLanguages = [...availableLanguages].sort((a, b) =>
     a.nativeName.localeCompare(b.nativeName, undefined, {
       sensitivity: "base",
     }),
   );
-
-  const currentLanguage = getCurrentLanguage(pathname, sortedLanguages);
 
   if (!currentLanguage) {
     return null;
