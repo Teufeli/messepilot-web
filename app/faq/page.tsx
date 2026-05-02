@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getWebsiteFAQSections } from "@/lib/helpCenter";
+import FAQAccordionClient from "./FAQAccordionClient";
 
 export const dynamic = "force-dynamic";
 
@@ -48,39 +49,7 @@ export default async function FAQPage() {
             </p>
           </div>
         ) : (
-          faqSections.map((section) => (
-            <section key={section.group} className="space-y-5">
-              <h2 className="text-2xl font-semibold text-slate-950">
-                {section.group}
-              </h2>
-
-              <div className="space-y-6">
-                {section.categories.map((category) => (
-                  <div
-                    key={`${section.group}-${category.title}`}
-                    className="rounded-2xl border border-slate-200 bg-white/80 p-5"
-                  >
-                    <h3 className="text-lg font-semibold text-slate-950">
-                      {category.title}
-                    </h3>
-
-                    <div className="mt-4 space-y-5">
-                      {category.items.map((item) => (
-                        <div key={item.question}>
-                          <h4 className="font-semibold text-slate-950">
-                            {item.question}
-                          </h4>
-                          <p className="mt-1 leading-7 text-slate-700">
-                            {item.answer}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ))
+          <FAQAccordionClient sections={faqSections} />
         )}
       </div>
     </section>
