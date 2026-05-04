@@ -248,10 +248,10 @@ export default function WebsiteNavigation() {
     .map((item) => localizeNavigationItem(item, currentLanguage));
 
   return (
-    <div className="flex w-full flex-col items-center gap-3 sm:w-auto sm:items-end">
+    <div className="flex w-full flex-wrap items-center justify-center gap-6 text-sm sm:w-auto sm:justify-end">
       <nav
         aria-label="Main navigation"
-        className="flex flex-wrap items-center justify-center gap-2 text-sm sm:justify-end"
+        className="flex flex-wrap items-center justify-center gap-2 sm:justify-end"
       >
         {navItems.map((item) => {
           const isActive = isActivePath(

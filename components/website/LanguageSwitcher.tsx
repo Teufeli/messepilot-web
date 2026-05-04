@@ -86,17 +86,8 @@ function getLocalizedPath(
     : `/${language.routePrefix}${basePath}`;
 }
 
-function languageLabel(languageCode: string): string {
-  switch (languageCode) {
-    case "de":
-      return "SPRACHE";
-    case "ja":
-      return "言語";
-    case "fr":
-      return "LANGUE";
-    default:
-      return "LANGUAGE";
-  }
+function shortLanguageLabel(languageCode: string): string {
+  return languageCode.toUpperCase();
 }
 
 export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
@@ -127,12 +118,9 @@ export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
   }
 
   return (
-    <label className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/85 px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm backdrop-blur">
-      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
-        {languageLabel(currentLanguage.languageCode)}
-      </span>
-
+    <label className="inline-flex items-center">
       <select
+        aria-label="Select website language"
         value={currentLanguage.languageCode}
         onChange={(event) => {
           const selectedLanguage = sortedLanguages.find(
@@ -145,11 +133,11 @@ export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
             );
           }
         }}
-        className="bg-transparent text-sm font-semibold text-slate-800 outline-none"
+        className="cursor-pointer bg-transparent text-sm font-semibold uppercase text-slate-700 outline-none transition hover:text-slate-950"
       >
         {sortedLanguages.map((language) => (
           <option key={language.languageCode} value={language.languageCode}>
-            {language.nativeName}
+            {shortLanguageLabel(language.languageCode)}
           </option>
         ))}
       </select>
