@@ -104,6 +104,12 @@ export const websitePageType = defineType({
               type: 'string',
             }),
             defineField({
+              name: 'primaryButtonNote',
+              title: 'Primary Button Note',
+              type: 'text',
+              rows: 4,
+            }),
+            defineField({
               name: 'bodyBlocks',
               title: 'Body Blocks',
               type: 'array',

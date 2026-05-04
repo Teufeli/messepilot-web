@@ -9,6 +9,7 @@ type WebsitePageTranslation = {
   heroText?: string;
   primaryButtonLabel?: string;
   primaryButtonHref?: string;
+  primaryButtonNote?: string;
 };
 
 type WebsitePage = {
@@ -38,7 +39,8 @@ async function getHomePage(): Promise<WebsitePage | null> {
         heroTitle,
         heroText,
         primaryButtonLabel,
-        primaryButtonHref
+        primaryButtonHref,
+        primaryButtonNote
       }
     }`,
     {},
@@ -146,12 +148,19 @@ export default async function SanityHomePreviewPage() {
                         {translation.heroText || "—"}
                       </p>
                       {translation.primaryButtonLabel ? (
-                        <p className="mt-5 inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950">
-                          {translation.primaryButtonLabel}
-                          {translation.primaryButtonHref
-                            ? ` → ${translation.primaryButtonHref}`
-                            : ""}
-                        </p>
+                        <div className="mt-5 space-y-3">
+                          <p className="inline-flex rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-950">
+                            {translation.primaryButtonLabel}
+                            {translation.primaryButtonHref
+                              ? ` → ${translation.primaryButtonHref}`
+                              : ""}
+                          </p>
+                          {translation.primaryButtonNote ? (
+                            <p className="max-w-2xl text-sm leading-6 text-slate-300">
+                              {translation.primaryButtonNote}
+                            </p>
+                          ) : null}
+                        </div>
                       ) : null}
                     </div>
                   </div>
