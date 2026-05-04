@@ -175,7 +175,7 @@ async function fetchPublishedHomePage(): Promise<SanityWebsitePage | null> {
       {},
       {
         next: {
-          revalidate: 300,
+          revalidate: 60,
         },
       },
     );
