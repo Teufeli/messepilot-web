@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getPublishedFairs } from "@/lib/fairs";
-import FairsListClient from "../../fairs/FairsListClient";
+import FairsListClient from "@/components/website/FairsListClient";
 
 export const dynamic = "force-dynamic";
 

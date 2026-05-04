@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import LanguageSwitcher from "./LanguageSwitcher";
+import LanguageSwitcher from "@/components/website/LanguageSwitcher";
 import type { WebsiteLanguage } from "@/lib/websiteLanguages";
 
 type Locale = "en" | "de" | "ja";

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getWebsiteFAQSections } from "@/lib/helpCenter";
-import FAQAccordionClient from "../../faq/FAQAccordionClient";
+import FAQAccordionClient from "@/components/website/FAQAccordionClient";
 
 export const dynamic = "force-dynamic";
 
