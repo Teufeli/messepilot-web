@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+
 import LanguageSwitcher from "@/components/website/LanguageSwitcher";
+import type {
+  WebsiteNavigationContent,
+  WebsiteNavigationItem,
+} from "@/lib/website/navigationContent";
 import type { WebsiteLanguage } from "@/lib/websiteLanguages";
 
 type Locale = "en" | "de" | "ja";
@@ -38,36 +43,39 @@ const fallbackLanguages: WebsiteLanguage[] = [
   },
 ];
 
-const labels: Record<
-  Locale,
-  {
-    home: string;
-    fairs: string;
-    faq: string;
-    privacy: string;
-    support: string;
-  }
-> = {
+const fallbackNavigationByLocale: Record<Locale, WebsiteNavigationContent> = {
   en: {
-    home: "Home",
-    fairs: "Fairs",
-    faq: "FAQ",
-    privacy: "Privacy",
-    support: "Support",
+    locale: "en",
+    menuLabel: "Menu",
+    items: [
+      { itemKey: "home", label: "Home", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "Fairs", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "Privacy", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "Support", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
   },
   de: {
-    home: "Home",
-    fairs: "Messen",
-    faq: "FAQ",
-    privacy: "Datenschutz",
-    support: "Support",
+    locale: "de",
+    menuLabel: "Menü",
+    items: [
+      { itemKey: "home", label: "Home", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "Messen", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "Datenschutz", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "Support", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
   },
   ja: {
-    home: "ホーム",
-    fairs: "展示会",
-    faq: "FAQ",
-    privacy: "プライバシー",
-    support: "サポート",
+    locale: "ja",
+    menuLabel: "メニュー",
+    items: [
+      { itemKey: "home", label: "ホーム", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "展示会", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "プライバシー", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "サポート", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
   },
 };
 
@@ -110,6 +118,14 @@ function getCurrentLanguage(
   return languages.find((language) => language.isFallback) || languages[0];
 }
 
+function knownLocale(languageCode: string): Locale {
+  if (languageCode === "de" || languageCode === "ja") {
+    return languageCode;
+  }
+
+  return "en";
+}
+
 function localizedPath(language: WebsiteLanguage, path: string): string {
   if (language.isFallback || language.routePrefix === "") {
     return path;
@@ -128,18 +144,31 @@ function isActivePath(pathname: string, href: string, exact = false): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function knownLocale(languageCode: string): Locale {
-  if (languageCode === "de" || languageCode === "ja") {
-    return languageCode;
-  }
-
-  return "en";
+function localizeNavigationItem(
+  item: WebsiteNavigationItem,
+  language: WebsiteLanguage,
+): WebsiteNavigationItem {
+  return {
+    ...item,
+    href: localizedPath(language, item.href),
+  };
 }
 
-export default function HeaderNavigation() {
+export default function WebsiteNavigation() {
   const pathname = usePathname();
   const [languages, setLanguages] =
     useState<WebsiteLanguage[]>(fallbackLanguages);
+  const [navigation, setNavigation] = useState<WebsiteNavigationContent | null>(
+    null,
+  );
+
+  const currentLanguage = useMemo(
+    () => getCurrentLanguage(pathname, languages),
+    [pathname, languages],
+  );
+
+  const currentLocale = knownLocale(currentLanguage.languageCode);
+  const fallbackNavigation = fallbackNavigationByLocale[currentLocale];
 
   useEffect(() => {
     let isMounted = true;
@@ -177,20 +206,46 @@ export default function HeaderNavigation() {
     };
   }, []);
 
-  const currentLanguage = useMemo(
-    () => getCurrentLanguage(pathname, languages),
-    [pathname, languages],
-  );
+  useEffect(() => {
+    let isMounted = true;
 
-  const copy = labels[knownLocale(currentLanguage.languageCode)];
+    async function loadNavigation() {
+      try {
+        const response = await fetch(
+          `/api/website-navigation?locale=${encodeURIComponent(currentLocale)}`,
+          {
+            cache: "no-store",
+          },
+        );
 
-  const navItems = [
-    { href: localizedPath(currentLanguage, "/"), label: copy.home, exact: true },
-    { href: localizedPath(currentLanguage, "/fairs"), label: copy.fairs },
-    { href: localizedPath(currentLanguage, "/faq"), label: copy.faq },
-    { href: localizedPath(currentLanguage, "/privacy"), label: copy.privacy },
-    { href: localizedPath(currentLanguage, "/support"), label: copy.support },
-  ];
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = (await response.json()) as {
+          navigation?: WebsiteNavigationContent;
+        };
+
+        if (isMounted && payload.navigation) {
+          setNavigation(payload.navigation);
+        }
+      } catch {
+        // Fallback navigation stays active.
+      }
+    }
+
+    loadNavigation();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentLocale]);
+
+  const navigationContent = navigation ?? fallbackNavigation;
+
+  const navItems = navigationContent.items
+    .filter((item) => item.isVisible)
+    .map((item) => localizeNavigationItem(item, currentLanguage));
 
   return (
     <div className="flex w-full flex-col items-center gap-3 sm:w-auto sm:items-end">
@@ -199,11 +254,15 @@ export default function HeaderNavigation() {
         className="flex flex-wrap items-center justify-center gap-2 text-sm sm:justify-end"
       >
         {navItems.map((item) => {
-          const isActive = isActivePath(pathname, item.href, item.exact);
+          const isActive = isActivePath(
+            pathname,
+            item.href,
+            item.itemKey === "home",
+          );
 
           return (
             <Link
-              key={item.href}
+              key={item.itemKey}
               href={item.href}
               className={[
                 "rounded-full px-3 py-1.5 font-medium transition",

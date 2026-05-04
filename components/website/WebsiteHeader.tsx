@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import HeaderNavigation from "@/app/HeaderNavigation";
+import WebsiteNavigation from "@/components/website/WebsiteNavigation";
 
 export function WebsiteHeader() {
   return (
@@ -22,7 +22,7 @@ export function WebsiteHeader() {
           <span>MessePilot</span>
         </Link>
 
-        <HeaderNavigation />
+        <WebsiteNavigation />
       </div>
     </header>
   );
