@@ -2,41 +2,26 @@ import {
   collection,
   doc,
   getDocs,
-  query,
-  where,
 } from "firebase/firestore/lite";
 import { db } from "./firebase";
 
-export type HelpCenterTranslation = {
-  title?: string;
+export type PublicHelpCenterFAQ = {
+  faqId: string;
+  languageCode: string;
+  sourceLanguageCode: string;
+  usedFallbackLanguage: boolean;
+  groupKey: string;
+  groupTitle?: string;
+  groupSortOrder?: number;
+  categoryKey: string;
+  categoryTitle?: string;
+  categorySortOrder?: number;
+  sortOrder?: number;
   question?: string;
   shortAnswer?: string;
   answer?: string;
-  status?: string;
-};
-
-export type HelpCenterGroup = {
-  groupKey: string;
-  sortOrder: number;
-  status: string;
-  translations: Record<string, HelpCenterTranslation>;
-};
-
-export type HelpCenterCategory = {
-  categoryKey: string;
-  groupKey: string;
-  sortOrder: number;
-  status: string;
-  translations: Record<string, HelpCenterTranslation>;
-};
-
-export type HelpCenterFAQ = {
-  faqId: string;
-  groupKey: string;
-  categoryKey: string;
-  sortOrder: number;
-  status: string;
-  translations: Record<string, HelpCenterTranslation>;
+  media?: unknown[];
+  publicUpdatedAt?: unknown;
 };
 
 export type WebsiteFAQItem = {
@@ -54,126 +39,128 @@ export type WebsiteFAQSection = {
   categories: WebsiteFAQCategory[];
 };
 
-const helpCenterDoc = doc(db, "publicContent", "helpCenter");
+const helpCenterPublishedDoc = doc(db, "publicContent", "helpCenterPublished");
 
-function translationTitle(
-  translations: Record<string, HelpCenterTranslation> | undefined,
-  languageCode: string,
-): string | undefined {
-  return (
-    translations?.[languageCode]?.title ||
-    translations?.en?.title
-  );
+function normalizeLanguageCode(languageCode: string): string {
+  const trimmed = languageCode.trim().toLowerCase();
+  return trimmed || "en";
 }
 
-function faqTranslation(
-  translations: Record<string, HelpCenterTranslation> | undefined,
-  languageCode: string,
-): HelpCenterTranslation | undefined {
-  const current = translations?.[languageCode];
-  if (current?.status === "published" && current.question && current.answer) {
-    return current;
-  }
+function stringValue(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
 
-  const fallback = translations?.en;
-  if (fallback?.status === "published" && fallback.question && fallback.answer) {
-    return fallback;
-  }
+function numberValue(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
 
-  return undefined;
+type CategoryGroup = {
+  categoryKey: string;
+  categoryTitle: string;
+  categorySortOrder: number;
+  faqs: PublicHelpCenterFAQ[];
+};
+
+type SectionGroup = {
+  groupKey: string;
+  groupTitle: string;
+  groupSortOrder: number;
+  categories: Map<string, CategoryGroup>;
+};
+
+function compareText(a: string, b: string): number {
+  return a.localeCompare(b);
+}
+
+function compareFaqs(a: PublicHelpCenterFAQ, b: PublicHelpCenterFAQ): number {
+  return (
+    numberValue(a.sortOrder) - numberValue(b.sortOrder) ||
+    compareText(a.faqId, b.faqId)
+  );
 }
 
 export async function getWebsiteFAQSections(
   languageCode: string,
 ): Promise<WebsiteFAQSection[]> {
-  const groupsSnapshot = await getDocs(
-    query(collection(helpCenterDoc, "groups"), where("status", "==", "published")),
-  );
-
-  const categoriesSnapshot = await getDocs(
-    query(collection(helpCenterDoc, "categories"), where("status", "==", "published")),
-  );
-
+  const normalizedLanguageCode = normalizeLanguageCode(languageCode);
   const faqsSnapshot = await getDocs(
-    query(collection(helpCenterDoc, "faqs"), where("status", "==", "published")),
+    collection(
+      helpCenterPublishedDoc,
+      "languages",
+      normalizedLanguageCode,
+      "faqs",
+    ),
   );
 
-  const groups = (groupsSnapshot.docs.map((document) => ({
-    groupKey: document.id,
-    ...document.data(),
-  })) as HelpCenterGroup[])
-    .sort((a, b) => a.sortOrder - b.sortOrder || a.groupKey.localeCompare(b.groupKey));
+  const sections = new Map<string, SectionGroup>();
 
-  const categories = (categoriesSnapshot.docs.map((document) => ({
-    categoryKey: document.id,
-    ...document.data(),
-  })) as HelpCenterCategory[])
-    .sort((a, b) => a.sortOrder - b.sortOrder || a.categoryKey.localeCompare(b.categoryKey));
+  for (const document of faqsSnapshot.docs) {
+    const faq = {
+      faqId: document.id,
+      ...document.data(),
+    } as PublicHelpCenterFAQ;
+    const question = stringValue(faq.question);
+    const answer = stringValue(faq.answer);
 
-  const faqs = (faqsSnapshot.docs.map((document) => ({
-    faqId: document.id,
-    ...document.data(),
-  })) as HelpCenterFAQ[])
-    .sort((a, b) => a.sortOrder - b.sortOrder || a.faqId.localeCompare(b.faqId));
+    if (!question || !answer) {
+      continue;
+    }
 
-  return groups
-    .map((group) => {
-      const groupTitle = translationTitle(group.translations, languageCode);
-      if (!groupTitle) {
-        return null;
-      }
+    const groupKey = stringValue(faq.groupKey);
+    const categoryKey = stringValue(faq.categoryKey);
 
-      const groupCategories = categories
-        .filter((category) => category.groupKey === group.groupKey)
-        .map((category) => {
-          const categoryTitle = translationTitle(
-            category.translations,
-            languageCode,
-          );
+    if (!groupKey || !categoryKey) {
+      continue;
+    }
 
-          if (!categoryTitle) {
-            return null;
-          }
+    if (!sections.has(groupKey)) {
+      sections.set(groupKey, {
+        groupKey,
+        groupTitle: stringValue(faq.groupTitle) || groupKey,
+        groupSortOrder: numberValue(faq.groupSortOrder),
+        categories: new Map(),
+      });
+    }
 
-          const items = faqs
-            .filter(
-              (faq) =>
-                faq.groupKey === group.groupKey &&
-                faq.categoryKey === category.categoryKey,
-            )
-            .map((faq) => {
-              const translation = faqTranslation(faq.translations, languageCode);
+    const section = sections.get(groupKey)!;
 
-              if (!translation?.question || !translation.answer) {
-                return null;
-              }
+    if (!section.categories.has(categoryKey)) {
+      section.categories.set(categoryKey, {
+        categoryKey,
+        categoryTitle: stringValue(faq.categoryTitle) || categoryKey,
+        categorySortOrder: numberValue(faq.categorySortOrder),
+        faqs: [],
+      });
+    }
 
-              return {
-                question: translation.question,
-                answer: translation.answer,
-              };
-            })
-            .filter((item): item is WebsiteFAQItem => Boolean(item));
+    section.categories.get(categoryKey)!.faqs.push({
+      ...faq,
+      question,
+      answer,
+    });
+  }
 
-          if (items.length === 0) {
-            return null;
-          }
-
-          return {
-            title: categoryTitle,
-            items,
-          };
-        })
-        .filter((category): category is WebsiteFAQCategory => Boolean(category));
-
-      if (groupCategories.length === 0) {
-        return null;
-      }
-
-      return {
-        group: groupTitle,
-        categories: groupCategories,
-      };
-    })
-    .filter((section): section is WebsiteFAQSection => Boolean(section));
+  return [...sections.values()]
+    .sort(
+      (a, b) =>
+        a.groupSortOrder - b.groupSortOrder ||
+        compareText(a.groupKey, b.groupKey),
+    )
+    .map((section) => ({
+      group: section.groupTitle,
+      categories: [...section.categories.values()]
+        .sort(
+          (a, b) =>
+            a.categorySortOrder - b.categorySortOrder ||
+            compareText(a.categoryKey, b.categoryKey),
+        )
+        .map((category) => ({
+          title: category.categoryTitle,
+          items: category.faqs.sort(compareFaqs).map((faq) => ({
+            question: stringValue(faq.question),
+            answer: stringValue(faq.answer),
+          })),
+        })),
+    }))
+    .filter((section) => section.categories.length > 0);
 }
