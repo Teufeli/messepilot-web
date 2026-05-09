@@ -114,6 +114,29 @@ function formatFallbackId(documentId: string, data: FirestoreFairDocument): stri
   return data.id || documentId;
 }
 
+const TECHNICAL_PUBLIC_CATEGORIES = new Set(["imported"]);
+
+function publicFairCategories(categories: string[] | undefined): string[] {
+  if (!Array.isArray(categories)) {
+    return [];
+  }
+
+  const seen = new Set<string>();
+  return categories
+    .map((category) => category.trim())
+    .filter((category) => {
+      const normalized = category.toLowerCase();
+      if (!category || TECHNICAL_PUBLIC_CATEGORIES.has(normalized)) {
+        return false;
+      }
+      if (seen.has(normalized)) {
+        return false;
+      }
+      seen.add(normalized);
+      return true;
+    });
+}
+
 function mapFairDocument(documentId: string, data: FirestoreFairDocument): WebsiteFair {
   return {
     id: formatFallbackId(documentId, data),
@@ -122,7 +145,7 @@ function mapFairDocument(documentId: string, data: FirestoreFairDocument): Websi
     countryISO: data.countryISO ?? "",
     startDate: toDate(data.startDate),
     endDate: toDate(data.endDate),
-    categories: Array.isArray(data.categories) ? data.categories : [],
+    categories: publicFairCategories(data.categories),
     officialWebsite: data.officialWebsite,
     organizerName: data.organizerName,
     updatedAt: toDate(data.updatedAt),
