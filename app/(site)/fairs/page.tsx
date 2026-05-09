@@ -18,6 +18,13 @@ export default async function FairsPage() {
     officialWebsite: "Official website",
     soonestFirst: "Soonest first",
     latestFirst: "Latest first",
+    hidePastFairs: "Hide past fairs",
+    noUpcomingTitle: "No upcoming published fairs visible",
+    noUpcomingText:
+      "Turn off Hide past fairs to show past published fairs too.",
+    fairSingular: "fair",
+    fairPlural: "fairs",
+    dateToBeConfirmed: "DATE TO BE CONFIRMED",
   };
 
   return (

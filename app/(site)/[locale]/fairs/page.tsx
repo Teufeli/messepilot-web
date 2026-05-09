@@ -25,6 +25,12 @@ const localizedCopy: Record<
     officialWebsite: string;
     soonestFirst: string;
     latestFirst: string;
+    hidePastFairs: string;
+    noUpcomingTitle: string;
+    noUpcomingText: string;
+    fairSingular: string;
+    fairPlural: string;
+    dateToBeConfirmed: string;
   }
 > = {
   de: {
@@ -42,6 +48,13 @@ const localizedCopy: Record<
     officialWebsite: "Offizielle Website",
     soonestFirst: "Nächste zuerst",
     latestFirst: "Spätere zuerst",
+    hidePastFairs: "Vergangene Messen ausblenden",
+    noUpcomingTitle: "Keine kommenden veröffentlichten Messen sichtbar",
+    noUpcomingText:
+      "Deaktiviere Vergangene Messen ausblenden, um vergangene veröffentlichte Messen anzuzeigen.",
+    fairSingular: "Messe",
+    fairPlural: "Messen",
+    dateToBeConfirmed: "DATUM NOCH OFFEN",
   },
   ja: {
     title: "展示会 | MessePilot",
@@ -58,6 +71,13 @@ const localizedCopy: Record<
     officialWebsite: "公式サイト",
     soonestFirst: "近い日程順",
     latestFirst: "遅い日程順",
+    hidePastFairs: "過去の展示会を非表示",
+    noUpcomingTitle: "表示できる今後の公開済み展示会はありません",
+    noUpcomingText:
+      "過去の展示会も表示するには、過去の展示会を非表示をオフにしてください。",
+    fairSingular: "件",
+    fairPlural: "件",
+    dateToBeConfirmed: "日程未定",
   },
 };
 
@@ -75,6 +95,12 @@ const fallbackCopy = {
   officialWebsite: "Official website",
   soonestFirst: "Soonest first",
   latestFirst: "Latest first",
+  hidePastFairs: "Hide past fairs",
+  noUpcomingTitle: "No upcoming published fairs visible",
+  noUpcomingText: "Turn off Hide past fairs to show past published fairs too.",
+  fairSingular: "fair",
+  fairPlural: "fairs",
+  dateToBeConfirmed: "DATE TO BE CONFIRMED",
 };
 
 export async function generateMetadata({

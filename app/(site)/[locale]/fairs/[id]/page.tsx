@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { FairBadgeStrip, FairUpdatesPanel } from "@/components/website/FairBadges";
 import { formatFairDateRange, getPublishedFairById } from "@/lib/fairs";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,7 @@ type FairDetailPageProps = {
 export async function generateMetadata({
   params,
 }: FairDetailPageProps): Promise<Metadata> {
-  const { locale, id } = await params;
+  const { id } = await params;
   const fair = await getPublishedFairById(id);
 
   if (!fair) {
@@ -74,6 +75,8 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
             <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
               {fair.name}
             </h1>
+
+            <FairBadgeStrip badges={fair.badges} maxCount={5} />
 
             <p className="text-lg font-medium text-slate-700">
               {fair.city}
@@ -177,6 +180,8 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
         </div>
 
         <aside className="space-y-6 rounded-3xl border border-white/70 bg-white/90 p-8 shadow-sm backdrop-blur-xl">
+          <FairUpdatesPanel fair={fair} />
+
           <section>
             <h2 className="text-xl font-semibold text-slate-950">Links</h2>
 
