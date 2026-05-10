@@ -1,4 +1,9 @@
-import type { WebsiteFair, WebsiteFairBadgeKind } from "@/lib/fairs";
+import {
+  localizedChangeEventText,
+  type WebsiteFair,
+  type WebsiteFairBadgeKind,
+  type WebsiteFairChangeEvent,
+} from "@/lib/fairs";
 import type { FairPageCopy } from "@/lib/website/fairCopy";
 
 const badgeLabels: Record<WebsiteFairBadgeKind, string> = {
@@ -51,32 +56,74 @@ export function FairBadgeStrip({
   );
 }
 
-function eventTitle(
-  event: WebsiteFair["changeEvents"][number],
-  fair: WebsiteFair,
-  copy: FairPageCopy,
-) {
-  const matchingBadge = fair.badges.find((badge) => badge.eventId === event.id);
-  if (matchingBadge) {
-    return copy.badges[matchingBadge.kind];
-  }
-
-  return event.title || copy.badges.updated;
+function normalizedChangedFields(fields: string[]): string[] {
+  return fields.map((field) => {
+    const trimmed = field.trim();
+    if (trimmed.startsWith("normalized.")) {
+      return trimmed.slice("normalized.".length);
+    }
+    if (trimmed.startsWith("localized.")) {
+      return trimmed.split(".").at(-1) ?? trimmed;
+    }
+    return trimmed;
+  });
 }
 
-function eventSummary(
-  event: WebsiteFair["changeEvents"][number],
-  copy: FairPageCopy,
-) {
-  return copy.changeEventSummaries[event.eventType] || event.summary;
+function changeEventCopyKey(event: WebsiteFairChangeEvent): keyof FairPageCopy["changeEventTitles"] {
+  switch (event.eventType) {
+    case "newFair":
+    case "updatedFair":
+    case "cancelled":
+    case "postponed":
+    case "dateChanged":
+    case "locationChanged":
+      return event.eventType;
+    case "importantInfoChanged":
+      break;
+  }
+
+  const fields = normalizedChangedFields(event.changedFields);
+  if (fields.some((field) => field === "officialWebsite" || field.endsWith(".officialWebsite"))) {
+    return "officialWebsiteChanged";
+  }
+  if (fields.some((field) => field === "startDate" || field === "endDate")) {
+    return "dateChanged";
+  }
+  if (
+    fields.some((field) =>
+      ["city", "countryISO", "venueName", "location"].includes(field),
+    )
+  ) {
+    return "locationChanged";
+  }
+  if (fields.includes("lifecycleStatus")) {
+    return "lifecycleStatusChanged";
+  }
+  if (fields.some((field) => field.includes("description"))) {
+    return "descriptionChanged";
+  }
+
+  return "importantInfoChanged";
+}
+
+function eventTitle(event: WebsiteFairChangeEvent, copy: FairPageCopy, locale: string) {
+  const localizedText = localizedChangeEventText(event, locale);
+  return localizedText.title || copy.changeEventTitles[changeEventCopyKey(event)] || event.title || copy.badges.updated;
+}
+
+function eventSummary(event: WebsiteFairChangeEvent, copy: FairPageCopy, locale: string) {
+  const localizedText = localizedChangeEventText(event, locale);
+  return localizedText.summary || copy.changeEventSummaries[changeEventCopyKey(event)] || event.summary;
 }
 
 export function FairUpdatesPanel({
   fair,
   copy,
+  locale,
 }: {
   fair: WebsiteFair;
   copy: FairPageCopy;
+  locale: string;
 }) {
   const visibleEvents = fair.changeEvents.filter((event) =>
     fair.badges.some((badge) => badge.eventId === event.id),
@@ -105,10 +152,10 @@ export function FairUpdatesPanel({
             className="rounded-2xl border border-slate-200 bg-white p-4"
           >
             <p className="font-semibold text-slate-950">
-              {eventTitle(event, fair, copy)}
+              {eventTitle(event, copy, locale)}
             </p>
             <p className="mt-1 text-sm leading-6 text-slate-600">
-              {eventSummary(event, copy)}
+              {eventSummary(event, copy, locale)}
             </p>
           </div>
         ))}

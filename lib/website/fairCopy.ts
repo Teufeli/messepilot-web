@@ -6,7 +6,12 @@ import {
 } from "@/lib/website/i18n";
 
 type BadgeLabels = Record<WebsiteFairBadgeKind, string>;
-type ChangeEventSummaries = Record<WebsiteFairChangeEventType, string>;
+type ChangeEventCopyKey =
+  | WebsiteFairChangeEventType
+  | "officialWebsiteChanged"
+  | "lifecycleStatusChanged"
+  | "descriptionChanged";
+type ChangeEventText = Record<ChangeEventCopyKey, string>;
 
 export type FairPageCopy = {
   title: string;
@@ -32,6 +37,7 @@ export type FairPageCopy = {
   openMap: string;
   openLocationInMaps: string;
   detailsHeading: string;
+  descriptionHeading: string;
   updates: string;
   links: string;
   name: string;
@@ -44,7 +50,8 @@ export type FairPageCopy = {
   fairNotFoundTitle: string;
   detailNote: string;
   badges: BadgeLabels;
-  changeEventSummaries: ChangeEventSummaries;
+  changeEventTitles: ChangeEventText;
+  changeEventSummaries: ChangeEventText;
 };
 
 export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
@@ -73,6 +80,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     openMap: "Open map",
     openLocationInMaps: "Open location in Maps",
     detailsHeading: "Details",
+    descriptionHeading: "About this fair",
     updates: "Updates",
     links: "Links",
     name: "Name",
@@ -94,6 +102,18 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
       locationChanged: "Location changed",
       important: "Important update",
     },
+    changeEventTitles: {
+      newFair: "Fair was published",
+      updatedFair: "Fair details updated",
+      cancelled: "Fair cancelled",
+      postponed: "Fair postponed",
+      dateChanged: "Date changed",
+      locationChanged: "Location changed",
+      importantInfoChanged: "Important update",
+      officialWebsiteChanged: "Official website changed",
+      lifecycleStatusChanged: "Lifecycle status changed",
+      descriptionChanged: "Description updated",
+    },
     changeEventSummaries: {
       newFair: "Fair was published.",
       updatedFair: "Fair details were updated.",
@@ -102,6 +122,9 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
       dateChanged: "Fair dates were updated.",
       locationChanged: "Fair location was updated.",
       importantInfoChanged: "Important fair information was updated.",
+      officialWebsiteChanged: "The official fair website was updated.",
+      lifecycleStatusChanged: "The public lifecycle status was updated.",
+      descriptionChanged: "The fair description was updated.",
     },
   },
   de: {
@@ -131,6 +154,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     openMap: "Karte öffnen",
     openLocationInMaps: "Standort in Karten öffnen",
     detailsHeading: "Details",
+    descriptionHeading: "Über diese Messe",
     updates: "Aktualisierungen",
     links: "Links",
     name: "Name",
@@ -152,6 +176,18 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
       locationChanged: "Ort geändert",
       important: "Wichtige Änderung",
     },
+    changeEventTitles: {
+      newFair: "Messe wurde veröffentlicht",
+      updatedFair: "Messedetails aktualisiert",
+      cancelled: "Messe abgesagt",
+      postponed: "Messe verschoben",
+      dateChanged: "Datum geändert",
+      locationChanged: "Ort geändert",
+      importantInfoChanged: "Wichtige Änderung",
+      officialWebsiteChanged: "Offizielle Website geändert",
+      lifecycleStatusChanged: "Lifecycle-Status geändert",
+      descriptionChanged: "Beschreibung aktualisiert",
+    },
     changeEventSummaries: {
       newFair: "Messe wurde veröffentlicht.",
       updatedFair: "Messedetails wurden aktualisiert.",
@@ -160,6 +196,9 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
       dateChanged: "Messetermine wurden aktualisiert.",
       locationChanged: "Messeort wurde aktualisiert.",
       importantInfoChanged: "Wichtige Messeinformationen wurden aktualisiert.",
+      officialWebsiteChanged: "Die offizielle Messe-Website wurde aktualisiert.",
+      lifecycleStatusChanged: "Der öffentliche Lifecycle-Status wurde aktualisiert.",
+      descriptionChanged: "Die Messebeschreibung wurde aktualisiert.",
     },
   },
   ja: {
@@ -189,6 +228,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     openMap: "地図を開く",
     openLocationInMaps: "地図で場所を開く",
     detailsHeading: "詳細",
+    descriptionHeading: "この展示会について",
     updates: "更新情報",
     links: "リンク",
     name: "名称",
@@ -210,6 +250,18 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
       locationChanged: "場所変更",
       important: "重要な更新",
     },
+    changeEventTitles: {
+      newFair: "展示会が公開されました",
+      updatedFair: "展示会情報が更新されました",
+      cancelled: "展示会が中止されました",
+      postponed: "展示会が延期されました",
+      dateChanged: "日程変更",
+      locationChanged: "場所変更",
+      importantInfoChanged: "重要な更新",
+      officialWebsiteChanged: "公式サイト変更",
+      lifecycleStatusChanged: "ステータス変更",
+      descriptionChanged: "説明が更新されました",
+    },
     changeEventSummaries: {
       newFair: "展示会が公開されました。",
       updatedFair: "展示会情報が更新されました。",
@@ -218,6 +270,9 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
       dateChanged: "展示会の日程が更新されました。",
       locationChanged: "展示会の場所が更新されました。",
       importantInfoChanged: "重要な展示会情報が更新されました。",
+      officialWebsiteChanged: "公式展示会サイトが更新されました。",
+      lifecycleStatusChanged: "公開ライフサイクルステータスが更新されました。",
+      descriptionChanged: "展示会の説明が更新されました。",
     },
   },
 };

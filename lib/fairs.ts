@@ -49,6 +49,8 @@ export type WebsiteFairChangeEvent = {
   visibleUntil: Date | null;
   title?: string;
   summary?: string;
+  localized: Record<string, { title?: string; summary?: string }>;
+  changedFields: string[];
 };
 
 export type WebsiteFair = {
@@ -59,6 +61,8 @@ export type WebsiteFair = {
   startDate: Date | null;
   endDate: Date | null;
   categories: string[];
+  description?: string;
+  localizedDescriptions: Record<string, string>;
   officialWebsite?: string;
   organizerName?: string;
   updatedAt: Date | null;
@@ -91,6 +95,8 @@ type FirestoreFairDocument = {
   lastSignificantChangeAt?: Timestamp;
   changeSummary?: string;
   recentImportantChangeUntil?: Timestamp;
+  description?: string;
+  localized?: Record<string, { description?: string }>;
 };
 
 type FirestoreFairChangeEventDocument = {
@@ -104,6 +110,8 @@ type FirestoreFairChangeEventDocument = {
   visibleUntil?: Timestamp;
   title?: string;
   summary?: string;
+  localized?: Record<string, { title?: string; summary?: string }>;
+  changedFields?: string[];
 };
 
 function toDate(value: Timestamp | undefined): Date | null {
@@ -137,6 +145,43 @@ function publicFairCategories(categories: string[] | undefined): string[] {
     });
 }
 
+function normalizedText(value: unknown): string | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function normalizeLocaleKey(value: string): string {
+  return value.trim().replaceAll("_", "-").toLowerCase();
+}
+
+function localizedFallbackCodes(locale: string): string[] {
+  const normalizedLocale = normalizeLocaleKey(locale);
+  const baseLanguage = normalizedLocale.split("-")[0];
+  const codes = [normalizedLocale, baseLanguage, "en", "de"].filter(Boolean);
+  return [...new Set(codes)];
+}
+
+function localizedDescriptions(
+  localized: FirestoreFairDocument["localized"],
+): Record<string, string> {
+  if (!localized || typeof localized !== "object") {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(localized)
+      .map(([locale, value]) => [
+        normalizeLocaleKey(locale),
+        normalizedText(value?.description),
+      ])
+      .filter((entry): entry is [string, string] => Boolean(entry[0] && entry[1])),
+  );
+}
+
 function mapFairDocument(documentId: string, data: FirestoreFairDocument): WebsiteFair {
   return {
     id: formatFallbackId(documentId, data),
@@ -146,6 +191,8 @@ function mapFairDocument(documentId: string, data: FirestoreFairDocument): Websi
     startDate: toDate(data.startDate),
     endDate: toDate(data.endDate),
     categories: publicFairCategories(data.categories),
+    description: normalizedText(data.description),
+    localizedDescriptions: localizedDescriptions(data.localized),
     officialWebsite: data.officialWebsite,
     organizerName: data.organizerName,
     updatedAt: toDate(data.updatedAt),
@@ -243,7 +290,31 @@ function mapChangeEventDocument(
     visibleUntil: toDate(data.visibleUntil),
     title: data.title,
     summary: data.summary,
+    localized: localizedChangeText(data.localized),
+    changedFields: Array.isArray(data.changedFields)
+      ? data.changedFields.filter((field): field is string => typeof field === "string")
+      : [],
   };
+}
+
+function localizedChangeText(
+  localized: FirestoreFairChangeEventDocument["localized"],
+): WebsiteFairChangeEvent["localized"] {
+  if (!localized || typeof localized !== "object") {
+    return {};
+  }
+
+  const entries = Object.entries(localized)
+    .map(([locale, value]) => {
+      const text = {
+        title: normalizedText(value?.title),
+        summary: normalizedText(value?.summary),
+      };
+      return [normalizeLocaleKey(locale), text] as const;
+    })
+    .filter(([, value]) => Boolean(value.title || value.summary));
+
+  return Object.fromEntries(entries);
 }
 
 async function getPublicChangeEventsByFairId(
@@ -377,6 +448,34 @@ export async function getPublishedFairById(id: string): Promise<WebsiteFair | nu
   const fair = mapFairDocument(fairDocument.id, data);
   const eventsByFairId = await getPublicChangeEventsByFairId([fair.id]);
   return attachPublicChangeState(fair, eventsByFairId.get(fair.id) ?? []);
+}
+
+export function localizedFairDescription(
+  fair: WebsiteFair,
+  locale: string,
+): string | undefined {
+  for (const localeCode of localizedFallbackCodes(locale)) {
+    const description = normalizedText(fair.localizedDescriptions[localeCode]);
+    if (description) {
+      return description;
+    }
+  }
+
+  return normalizedText(fair.description);
+}
+
+export function localizedChangeEventText(
+  event: WebsiteFairChangeEvent,
+  locale: string,
+): { title?: string; summary?: string } {
+  for (const localeCode of localizedFallbackCodes(locale)) {
+    const text = event.localized[localeCode];
+    if (text?.title || text?.summary) {
+      return text;
+    }
+  }
+
+  return {};
 }
 
 export function formatFairDateRange(

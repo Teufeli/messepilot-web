@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FairBadgeStrip, FairUpdatesPanel } from "@/components/website/FairBadges";
-import { formatFairDateRange, getPublishedFairById } from "@/lib/fairs";
+import {
+  formatFairDateRange,
+  getPublishedFairById,
+  localizedFairDescription,
+} from "@/lib/fairs";
 import { getFairCopy } from "@/lib/website/fairCopy";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +24,7 @@ export async function generateMetadata({
   const { locale, id } = await params;
   const copy = getFairCopy(locale);
   const fair = await getPublishedFairById(id);
+  const fairDescription = fair ? localizedFairDescription(fair, locale) : undefined;
 
   if (!fair) {
     return {
@@ -29,7 +34,7 @@ export async function generateMetadata({
 
   return {
     title: `${fair.name} | MessePilot`,
-    description: `${fair.name} in ${fair.city}, ${fair.countryISO}.`,
+    description: fairDescription ?? `${fair.name} in ${fair.city}, ${fair.countryISO}.`,
   };
 }
 
@@ -58,6 +63,7 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
     notFound();
   }
 
+  const fairDescription = localizedFairDescription(fair, locale);
   const mapURL =
     fair.latitude !== undefined && fair.longitude !== undefined
       ? `https://www.google.com/maps/search/?api=1&query=${fair.latitude},${fair.longitude}`
@@ -133,6 +139,17 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="space-y-6 rounded-3xl border border-white/70 bg-white/90 p-8 shadow-sm backdrop-blur-xl">
+          {fairDescription ? (
+            <section>
+              <h2 className="text-xl font-semibold text-slate-950">
+                {copy.descriptionHeading}
+              </h2>
+              <p className="mt-4 whitespace-pre-line text-base leading-7 text-slate-700">
+                {fairDescription}
+              </p>
+            </section>
+          ) : null}
+
           <section>
             <h2 className="text-xl font-semibold text-slate-950">
               {copy.detailsHeading}
@@ -205,7 +222,7 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
         </div>
 
         <aside className="space-y-6 rounded-3xl border border-white/70 bg-white/90 p-8 shadow-sm backdrop-blur-xl">
-          <FairUpdatesPanel fair={fair} copy={copy} />
+          <FairUpdatesPanel fair={fair} copy={copy} locale={locale} />
 
           <section>
             <h2 className="text-xl font-semibold text-slate-950">{copy.links}</h2>
