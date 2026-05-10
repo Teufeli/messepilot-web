@@ -383,9 +383,10 @@ export function formatFairDateRange(
   startDate: Date | null,
   endDate: Date | null,
   locale: string,
+  dateToBeConfirmed = "Date to be confirmed",
 ): string {
   if (!startDate && !endDate) {
-    return "Date to be confirmed";
+    return dateToBeConfirmed;
   }
 
   const formatter = new Intl.DateTimeFormat(locale, {

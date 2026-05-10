@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { FairBadgeStrip } from "@/components/website/FairBadges";
 import { formatFairDateRange, type WebsiteFair } from "@/lib/fairs";
+import type { FairPageCopy } from "@/lib/website/fairCopy";
 
 type SortOrder = "soonest" | "latest";
 
@@ -16,19 +17,7 @@ type FairMonthGroup = {
 type FairsListClientProps = {
   fairs: WebsiteFair[];
   locale: string;
-  copy: {
-    organizer: string;
-    details: string;
-    officialWebsite: string;
-    soonestFirst: string;
-    latestFirst: string;
-    hidePastFairs: string;
-    noUpcomingTitle: string;
-    noUpcomingText: string;
-    fairSingular: string;
-    fairPlural: string;
-    dateToBeConfirmed: string;
-  };
+  copy: FairPageCopy;
 };
 
 function compareFairsByStartDate(
@@ -232,7 +221,11 @@ export default function FairsListClient({
                           </Link>
                         </h3>
 
-                        <FairBadgeStrip badges={fair.badges} maxCount={3} />
+                        <FairBadgeStrip
+                          badges={fair.badges}
+                          labels={copy.badges}
+                          maxCount={3}
+                        />
 
                         <p className="text-sm font-medium text-slate-600">
                           {fair.city}
@@ -245,6 +238,7 @@ export default function FairsListClient({
                             fair.startDate,
                             fair.endDate,
                             locale,
+                            copy.dateToBeConfirmed,
                           )}
                         </p>
 

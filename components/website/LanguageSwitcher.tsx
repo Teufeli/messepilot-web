@@ -2,6 +2,10 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import type { WebsiteLanguage } from "@/lib/websiteLanguages";
+import {
+  websiteLocaleCookieName,
+  websiteLocaleStorageKey,
+} from "@/lib/website/i18n";
 
 type LanguageSwitcherProps = {
   languages: WebsiteLanguage[];
@@ -90,6 +94,18 @@ function shortLanguageLabel(languageCode: string): string {
   return languageCode.toUpperCase();
 }
 
+function persistLanguagePreference(languageCode: string) {
+  document.cookie = `${websiteLocaleCookieName}=${encodeURIComponent(
+    languageCode,
+  )}; path=/; max-age=31536000; samesite=lax`;
+
+  try {
+    window.localStorage.setItem(websiteLocaleStorageKey, languageCode);
+  } catch {
+    // Cookie persistence is enough for routing; localStorage is best effort.
+  }
+}
+
 export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -128,6 +144,7 @@ export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
           );
 
           if (selectedLanguage) {
+            persistLanguagePreference(selectedLanguage.languageCode);
             router.push(
               getLocalizedPath(pathname, selectedLanguage, sortedLanguages),
             );

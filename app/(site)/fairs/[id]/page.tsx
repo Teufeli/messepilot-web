@@ -3,8 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FairBadgeStrip, FairUpdatesPanel } from "@/components/website/FairBadges";
 import { formatFairDateRange, getPublishedFairById } from "@/lib/fairs";
+import { getFairCopy } from "@/lib/website/fairCopy";
 
 export const dynamic = "force-dynamic";
+const copy = getFairCopy("en");
 
 type FairDetailPageProps = {
   params: Promise<{
@@ -20,7 +22,7 @@ export async function generateMetadata({
 
   if (!fair) {
     return {
-      title: "Fair not found | MessePilot",
+      title: copy.fairNotFoundTitle,
     };
   }
 
@@ -30,12 +32,12 @@ export async function generateMetadata({
   };
 }
 
-function formatUpdatedAt(date: Date | null): string {
+function formatUpdatedAt(date: Date | null, locale: string): string {
   if (!date) {
-    return "Not available";
+    return copy.notAvailable;
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -62,20 +64,24 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
           href="/fairs"
           className="text-sm font-semibold text-blue-700 transition hover:text-blue-900"
         >
-          ← Back to fairs
+          ← {copy.backToFairs}
         </Link>
 
         <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4">
             <p className="text-sm font-medium uppercase tracking-[0.22em] text-slate-500">
-              Published fair
+              {copy.publishedFair}
             </p>
 
             <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
               {fair.name}
             </h1>
 
-            <FairBadgeStrip badges={fair.badges} maxCount={5} />
+            <FairBadgeStrip
+              badges={fair.badges}
+              labels={copy.badges}
+              maxCount={5}
+            />
 
             <p className="text-lg font-medium text-slate-700">
               {fair.city}
@@ -84,7 +90,12 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
             </p>
 
             <p className="text-lg text-slate-700">
-              {formatFairDateRange(fair.startDate, fair.endDate, "en")}
+              {formatFairDateRange(
+                fair.startDate,
+                fair.endDate,
+                "en",
+                copy.dateToBeConfirmed,
+              )}
             </p>
           </div>
 
@@ -96,7 +107,7 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
                 rel="noreferrer"
                 className="inline-flex items-center justify-center rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
               >
-                Official website
+                {copy.officialWebsite}
               </a>
             ) : null}
 
@@ -107,7 +118,7 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
                 rel="noreferrer"
                 className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
               >
-                Open map
+                {copy.openMap}
               </a>
             ) : null}
           </div>
@@ -117,43 +128,52 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
         <div className="space-y-6 rounded-3xl border border-white/70 bg-white/90 p-8 shadow-sm backdrop-blur-xl">
           <section>
-            <h2 className="text-xl font-semibold text-slate-950">Details</h2>
+            <h2 className="text-xl font-semibold text-slate-950">
+              {copy.detailsHeading}
+            </h2>
 
             <dl className="mt-5 divide-y divide-slate-200 rounded-2xl bg-slate-50">
               <div className="grid gap-1 px-5 py-4 sm:grid-cols-[180px_1fr]">
-                <dt className="font-medium text-slate-600">Name</dt>
+                <dt className="font-medium text-slate-600">{copy.name}</dt>
                 <dd className="text-slate-950">{fair.name}</dd>
               </div>
 
               <div className="grid gap-1 px-5 py-4 sm:grid-cols-[180px_1fr]">
-                <dt className="font-medium text-slate-600">City</dt>
-                <dd className="text-slate-950">{fair.city || "Not available"}</dd>
+                <dt className="font-medium text-slate-600">{copy.city}</dt>
+                <dd className="text-slate-950">{fair.city || copy.notAvailable}</dd>
               </div>
 
               <div className="grid gap-1 px-5 py-4 sm:grid-cols-[180px_1fr]">
-                <dt className="font-medium text-slate-600">Country</dt>
+                <dt className="font-medium text-slate-600">{copy.country}</dt>
                 <dd className="text-slate-950">
-                  {fair.countryISO || "Not available"}
+                  {fair.countryISO || copy.notAvailable}
                 </dd>
               </div>
 
               <div className="grid gap-1 px-5 py-4 sm:grid-cols-[180px_1fr]">
-                <dt className="font-medium text-slate-600">Date</dt>
+                <dt className="font-medium text-slate-600">{copy.date}</dt>
                 <dd className="text-slate-950">
-                  {formatFairDateRange(fair.startDate, fair.endDate, "en")}
+                  {formatFairDateRange(
+                    fair.startDate,
+                    fair.endDate,
+                    "en",
+                    copy.dateToBeConfirmed,
+                  )}
                 </dd>
               </div>
 
               <div className="grid gap-1 px-5 py-4 sm:grid-cols-[180px_1fr]">
-                <dt className="font-medium text-slate-600">Organizer</dt>
+                <dt className="font-medium text-slate-600">{copy.organizer}</dt>
                 <dd className="text-slate-950">
-                  {fair.organizerName || "Not available"}
+                  {fair.organizerName || copy.notAvailable}
                 </dd>
               </div>
 
               <div className="grid gap-1 px-5 py-4 sm:grid-cols-[180px_1fr]">
-                <dt className="font-medium text-slate-600">Last updated</dt>
-                <dd className="text-slate-950">{formatUpdatedAt(fair.updatedAt)}</dd>
+                <dt className="font-medium text-slate-600">{copy.lastUpdated}</dt>
+                <dd className="text-slate-950">
+                  {formatUpdatedAt(fair.updatedAt, "en")}
+                </dd>
               </div>
             </dl>
           </section>
@@ -161,7 +181,7 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
           {fair.categories.length > 0 ? (
             <section>
               <h2 className="text-xl font-semibold text-slate-950">
-                Categories
+                {copy.categories}
               </h2>
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -179,10 +199,10 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
         </div>
 
         <aside className="space-y-6 rounded-3xl border border-white/70 bg-white/90 p-8 shadow-sm backdrop-blur-xl">
-          <FairUpdatesPanel fair={fair} />
+          <FairUpdatesPanel fair={fair} copy={copy} />
 
           <section>
-            <h2 className="text-xl font-semibold text-slate-950">Links</h2>
+            <h2 className="text-xl font-semibold text-slate-950">{copy.links}</h2>
 
             <div className="mt-4 space-y-3">
               {fair.officialWebsite ? (
@@ -192,7 +212,7 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
                   rel="noreferrer"
                   className="block rounded-2xl border border-slate-200 bg-white p-4 font-semibold text-blue-700 transition hover:border-blue-200 hover:bg-blue-50"
                 >
-                  Official website
+                  {copy.officialWebsite}
                 </a>
               ) : null}
 
@@ -203,15 +223,14 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
                   rel="noreferrer"
                   className="block rounded-2xl border border-slate-200 bg-white p-4 font-semibold text-blue-700 transition hover:border-blue-200 hover:bg-blue-50"
                 >
-                  Open location in Maps
+                  {copy.openLocationInMaps}
                 </a>
               ) : null}
             </div>
           </section>
 
           <p className="text-sm leading-6 text-slate-600">
-            Messe details can change. Always verify travel, venue and business
-            information on the official fair website before making decisions.
+            {copy.detailNote}
           </p>
         </aside>
       </div>

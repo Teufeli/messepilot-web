@@ -1,4 +1,5 @@
 import type { WebsiteFair, WebsiteFairBadgeKind } from "@/lib/fairs";
+import type { FairPageCopy } from "@/lib/website/fairCopy";
 
 const badgeLabels: Record<WebsiteFairBadgeKind, string> = {
   new: "New",
@@ -22,9 +23,11 @@ const badgeStyles: Record<WebsiteFairBadgeKind, string> = {
 
 export function FairBadgeStrip({
   badges,
+  labels = badgeLabels,
   maxCount = 4,
 }: {
   badges: WebsiteFair["badges"];
+  labels?: Record<WebsiteFairBadgeKind, string>;
   maxCount?: number;
 }) {
   if (badges.length === 0) {
@@ -41,32 +44,58 @@ export function FairBadgeStrip({
             badgeStyles[badge.kind],
           ].join(" ")}
         >
-          {badgeLabels[badge.kind]}
+          {labels[badge.kind]}
         </span>
       ))}
     </div>
   );
 }
 
-export function FairUpdatesPanel({ fair }: { fair: WebsiteFair }) {
+function eventTitle(
+  event: WebsiteFair["changeEvents"][number],
+  fair: WebsiteFair,
+  copy: FairPageCopy,
+) {
+  const matchingBadge = fair.badges.find((badge) => badge.eventId === event.id);
+  if (matchingBadge) {
+    return copy.badges[matchingBadge.kind];
+  }
+
+  return event.title || copy.badges.updated;
+}
+
+function eventSummary(
+  event: WebsiteFair["changeEvents"][number],
+  copy: FairPageCopy,
+) {
+  return copy.changeEventSummaries[event.eventType] || event.summary;
+}
+
+export function FairUpdatesPanel({
+  fair,
+  copy,
+}: {
+  fair: WebsiteFair;
+  copy: FairPageCopy;
+}) {
   const visibleEvents = fair.changeEvents.filter((event) =>
     fair.badges.some((badge) => badge.eventId === event.id),
   );
-  const hasSummary = Boolean(fair.changeSummary);
+  const fallbackSummary = visibleEvents.length === 0 ? fair.changeSummary : null;
 
-  if (fair.badges.length === 0 && visibleEvents.length === 0 && !hasSummary) {
+  if (fair.badges.length === 0 && visibleEvents.length === 0 && !fallbackSummary) {
     return null;
   }
 
   return (
     <section>
-      <h2 className="text-xl font-semibold text-slate-950">Updates</h2>
+      <h2 className="text-xl font-semibold text-slate-950">{copy.updates}</h2>
       <div className="mt-4 space-y-3">
-        <FairBadgeStrip badges={fair.badges} />
+        <FairBadgeStrip badges={fair.badges} labels={copy.badges} />
 
-        {hasSummary ? (
+        {fallbackSummary ? (
           <p className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
-            {fair.changeSummary}
+            {fallbackSummary}
           </p>
         ) : null}
 
@@ -75,14 +104,12 @@ export function FairUpdatesPanel({ fair }: { fair: WebsiteFair }) {
             key={event.id}
             className="rounded-2xl border border-slate-200 bg-white p-4"
           >
-            {event.title ? (
-              <p className="font-semibold text-slate-950">{event.title}</p>
-            ) : null}
-            {event.summary ? (
-              <p className="mt-1 text-sm leading-6 text-slate-600">
-                {event.summary}
-              </p>
-            ) : null}
+            <p className="font-semibold text-slate-950">
+              {eventTitle(event, fair, copy)}
+            </p>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              {eventSummary(event, copy)}
+            </p>
           </div>
         ))}
       </div>
