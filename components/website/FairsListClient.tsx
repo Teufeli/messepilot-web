@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { FairBadgeStrip } from "@/components/website/FairBadges";
+import {
+  FairBadgeStrip,
+  FairLifecycleNotice,
+} from "@/components/website/FairBadges";
 import { formatFairDateRange, type WebsiteFair } from "@/lib/fairs";
 import type { FairPageCopy } from "@/lib/website/fairCopy";
 
@@ -210,6 +213,13 @@ export default function FairsListClient({
                     key={fair.id}
                     className="rounded-2xl border border-slate-200 bg-white/85 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
                   >
+                    <FairLifecycleNotice
+                      fair={fair}
+                      copy={copy}
+                      variant="card"
+                      className="mb-5"
+                    />
+
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                       <div className="space-y-2">
                         <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
@@ -225,6 +235,7 @@ export default function FairsListClient({
                           badges={fair.badges}
                           labels={copy.badges}
                           maxCount={3}
+                          hideProminentLifecycleBadges
                         />
 
                         <p className="text-sm font-medium text-slate-600">

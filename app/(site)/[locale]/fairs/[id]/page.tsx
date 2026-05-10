@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FairBadgeStrip, FairUpdatesPanel } from "@/components/website/FairBadges";
+import {
+  FairBadgeStrip,
+  FairLifecycleNotice,
+  FairUpdatesPanel,
+} from "@/components/website/FairBadges";
 import {
   formatFairDateRange,
   getPublishedFairById,
@@ -89,10 +93,13 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
               {fair.name}
             </h1>
 
+            <FairLifecycleNotice fair={fair} copy={copy} />
+
             <FairBadgeStrip
               badges={fair.badges}
               labels={copy.badges}
               maxCount={5}
+              hideProminentLifecycleBadges
             />
 
             <p className="text-lg font-medium text-slate-700">

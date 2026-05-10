@@ -1,4 +1,8 @@
-import type { WebsiteFairBadgeKind, WebsiteFairChangeEventType } from "@/lib/fairs";
+import type {
+  WebsiteFairBadgeKind,
+  WebsiteFairChangeEventType,
+  WebsiteFairLifecycleStatus,
+} from "@/lib/fairs";
 import {
   defaultWebsiteLocaleCode,
   isSupportedWebsiteLocale,
@@ -6,6 +10,17 @@ import {
 } from "@/lib/website/i18n";
 
 type BadgeLabels = Record<WebsiteFairBadgeKind, string>;
+export type ProminentLifecycleStatus = Extract<
+  WebsiteFairLifecycleStatus,
+  "cancelled" | "postponed"
+>;
+type LifecycleStatusCopy = Record<
+  ProminentLifecycleStatus,
+  {
+    stamp: string;
+    message: string;
+  }
+>;
 type ChangeEventCopyKey =
   | WebsiteFairChangeEventType
   | "officialWebsiteChanged"
@@ -50,6 +65,7 @@ export type FairPageCopy = {
   fairNotFoundTitle: string;
   detailNote: string;
   badges: BadgeLabels;
+  lifecycle: LifecycleStatusCopy;
   changeEventTitles: ChangeEventText;
   changeEventSummaries: ChangeEventText;
 };
@@ -101,6 +117,16 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
       dateChanged: "Date changed",
       locationChanged: "Location changed",
       important: "Important update",
+    },
+    lifecycle: {
+      cancelled: {
+        stamp: "CANCELLED",
+        message: "This fair has been cancelled.",
+      },
+      postponed: {
+        stamp: "POSTPONED",
+        message: "This fair has been postponed.",
+      },
     },
     changeEventTitles: {
       newFair: "Fair was published",
@@ -176,6 +202,16 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
       locationChanged: "Ort geändert",
       important: "Wichtige Änderung",
     },
+    lifecycle: {
+      cancelled: {
+        stamp: "ABGESAGT",
+        message: "Diese Messe wurde abgesagt.",
+      },
+      postponed: {
+        stamp: "VERSCHOBEN",
+        message: "Diese Messe wurde verschoben.",
+      },
+    },
     changeEventTitles: {
       newFair: "Messe wurde veröffentlicht",
       updatedFair: "Messedetails aktualisiert",
@@ -249,6 +285,16 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
       dateChanged: "日程変更",
       locationChanged: "場所変更",
       important: "重要な更新",
+    },
+    lifecycle: {
+      cancelled: {
+        stamp: "中止",
+        message: "この展示会は中止されました。",
+      },
+      postponed: {
+        stamp: "延期",
+        message: "この展示会は延期されました。",
+      },
     },
     changeEventTitles: {
       newFair: "展示会が公開されました",
