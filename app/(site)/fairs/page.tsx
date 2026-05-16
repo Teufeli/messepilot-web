@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getPublishedFairs } from "@/lib/fairs";
+import { getPublicFairCategories, getPublishedFairs } from "@/lib/fairs";
 import FairsListClient from "@/components/website/FairsListClient";
 import { getFairCopy } from "@/lib/website/fairCopy";
 
@@ -13,7 +13,10 @@ export const metadata: Metadata = {
 };
 
 export default async function FairsPage() {
-  const fairs = await getPublishedFairs();
+  const [fairs, categories] = await Promise.all([
+    getPublishedFairs(),
+    getPublicFairCategories(),
+  ]);
 
   return (
     <section className="space-y-8">
@@ -51,7 +54,12 @@ export default async function FairsPage() {
             </p>
           </div>
         ) : (
-          <FairsListClient fairs={fairs} locale="en" copy={copy} />
+          <FairsListClient
+            fairs={fairs}
+            categories={categories}
+            locale="en"
+            copy={copy}
+          />
         )}
       </div>
     </section>

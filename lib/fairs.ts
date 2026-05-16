@@ -77,6 +77,15 @@ export type WebsiteFair = {
   badges: WebsiteFairBadge[];
 };
 
+export type WebsiteFairCategory = {
+  id: string;
+  parentId?: string;
+  rootId?: string;
+  level?: number;
+  sortOrder?: number;
+  labels: Record<string, string>;
+};
+
 type FirestoreFairDocument = {
   id?: string;
   name?: string;
@@ -97,6 +106,19 @@ type FirestoreFairDocument = {
   recentImportantChangeUntil?: Timestamp;
   description?: string;
   localized?: Record<string, { description?: string }>;
+};
+
+type FirestoreFairCategoryDocument = {
+  id?: string;
+  categoryId?: string;
+  parentId?: string | null;
+  rootId?: string | null;
+  level?: number;
+  status?: string;
+  sortOrder?: number;
+  labels?: Record<string, unknown>;
+  localized?: Record<string, unknown>;
+  localizedLabels?: Record<string, unknown>;
 };
 
 type FirestoreFairChangeEventDocument = {
@@ -124,6 +146,14 @@ function formatFallbackId(documentId: string, data: FirestoreFairDocument): stri
 
 const TECHNICAL_PUBLIC_CATEGORIES = new Set(["imported"]);
 
+function normalizedCategoryKey(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function isTechnicalPublicCategory(categoryId: string): boolean {
+  return TECHNICAL_PUBLIC_CATEGORIES.has(normalizedCategoryKey(categoryId));
+}
+
 function publicFairCategories(categories: string[] | undefined): string[] {
   if (!Array.isArray(categories)) {
     return [];
@@ -133,7 +163,7 @@ function publicFairCategories(categories: string[] | undefined): string[] {
   return categories
     .map((category) => category.trim())
     .filter((category) => {
-      const normalized = category.toLowerCase();
+      const normalized = normalizedCategoryKey(category);
       if (!category || TECHNICAL_PUBLIC_CATEGORIES.has(normalized)) {
         return false;
       }
@@ -152,6 +182,10 @@ function normalizedText(value: unknown): string | undefined {
 
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function finiteNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
 function normalizeLocaleKey(value: string): string {
@@ -180,6 +214,76 @@ function localizedDescriptions(
       ])
       .filter((entry): entry is [string, string] => Boolean(entry[0] && entry[1])),
   );
+}
+
+function categoryLabelFromLocalizedValue(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    return normalizedText(value);
+  }
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const record = value as Record<string, unknown>;
+  return (
+    normalizedText(record.label) ??
+    normalizedText(record.name) ??
+    normalizedText(record.title)
+  );
+}
+
+function localizedCategoryLabels(
+  data: FirestoreFairCategoryDocument,
+): Record<string, string> {
+  const labels: Record<string, string> = {};
+
+  for (const source of [data.labels, data.localized, data.localizedLabels]) {
+    if (!source || typeof source !== "object") {
+      continue;
+    }
+
+    for (const [locale, value] of Object.entries(source)) {
+      const label = categoryLabelFromLocalizedValue(value);
+      const localeKey = normalizeLocaleKey(locale);
+      if (localeKey && label) {
+        labels[localeKey] = label;
+      }
+    }
+  }
+
+  return labels;
+}
+
+function isPublicFairCategoryStatus(status: string | undefined): boolean {
+  const normalized = normalizedText(status)?.toLowerCase();
+  return !normalized || normalized === "active";
+}
+
+function mapFairCategoryDocument(
+  documentId: string,
+  data: FirestoreFairCategoryDocument,
+): WebsiteFairCategory | null {
+  const id = normalizedText(data.categoryId) ?? normalizedText(data.id) ?? documentId;
+
+  if (!id || isTechnicalPublicCategory(id) || !isPublicFairCategoryStatus(data.status)) {
+    return null;
+  }
+
+  const parentId = normalizedText(data.parentId);
+  const rootId = normalizedText(data.rootId);
+
+  return {
+    id,
+    parentId:
+      parentId && !isTechnicalPublicCategory(parentId) && parentId !== id
+        ? parentId
+        : undefined,
+    rootId: rootId && !isTechnicalPublicCategory(rootId) ? rootId : undefined,
+    level: finiteNumber(data.level),
+    sortOrder: finiteNumber(data.sortOrder),
+    labels: localizedCategoryLabels(data),
+  };
 }
 
 function mapFairDocument(documentId: string, data: FirestoreFairDocument): WebsiteFair {
@@ -430,6 +534,57 @@ export async function getPublishedFairs(): Promise<WebsiteFair[]> {
   return fairs.map((fair) =>
     attachPublicChangeState(fair, eventsByFairId.get(fair.id) ?? []),
   );
+}
+
+export async function getPublicFairCategories(): Promise<WebsiteFairCategory[]> {
+  let categoryDocuments:
+    | Array<{
+        id: string;
+        data: () => unknown;
+      }>
+    | null = null;
+
+  try {
+    const activeSnapshot = await getDocs(
+      query(collection(db, "fairCategories"), where("status", "==", "active")),
+    );
+    categoryDocuments = activeSnapshot.docs;
+  } catch {
+    categoryDocuments = null;
+  }
+
+  if (!categoryDocuments || categoryDocuments.length === 0) {
+    try {
+      const snapshot = await getDocs(collection(db, "fairCategories"));
+      categoryDocuments = snapshot.docs;
+    } catch {
+      categoryDocuments = [];
+    }
+  }
+
+  return categoryDocuments
+    .map((document) =>
+      mapFairCategoryDocument(
+        document.id,
+        document.data() as FirestoreFairCategoryDocument,
+      ),
+    )
+    .filter((category): category is WebsiteFairCategory => Boolean(category))
+    .sort((a, b) => {
+      const aOrder = a.sortOrder ?? Number.MAX_SAFE_INTEGER;
+      const bOrder = b.sortOrder ?? Number.MAX_SAFE_INTEGER;
+      if (aOrder !== bOrder) {
+        return aOrder - bOrder;
+      }
+
+      const aLevel = a.level ?? Number.MAX_SAFE_INTEGER;
+      const bLevel = b.level ?? Number.MAX_SAFE_INTEGER;
+      if (aLevel !== bLevel) {
+        return aLevel - bLevel;
+      }
+
+      return a.id.localeCompare(b.id);
+    });
 }
 
 export async function getPublishedFairById(id: string): Promise<WebsiteFair | null> {

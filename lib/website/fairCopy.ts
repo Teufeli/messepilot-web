@@ -39,9 +39,14 @@ export type FairPageCopy = {
   organizer: string;
   details: string;
   officialWebsite: string;
+  searchPlaceholder: string;
+  categoryFilter: string;
+  selectedCategories: string;
+  resetFilters: string;
   soonestFirst: string;
   latestFirst: string;
   hidePastFairs: string;
+  noFilterResultsTitle: string;
   noUpcomingTitle: string;
   noUpcomingText: string;
   fairSingular: string;
@@ -83,9 +88,14 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     organizer: "Organizer",
     details: "View details",
     officialWebsite: "Official website",
+    searchPlaceholder: "Search fairs",
+    categoryFilter: "Categories",
+    selectedCategories: "Selected categories",
+    resetFilters: "Reset filters",
     soonestFirst: "Soonest first",
     latestFirst: "Latest first",
     hidePastFairs: "Hide past fairs",
+    noFilterResultsTitle: "No fairs found",
     noUpcomingTitle: "No upcoming published fairs visible",
     noUpcomingText: "Turn off Hide past fairs to show past published fairs too.",
     fairSingular: "fair",
@@ -166,9 +176,14 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     organizer: "Veranstalter",
     details: "Details ansehen",
     officialWebsite: "Offizielle Website",
+    searchPlaceholder: "Messen suchen",
+    categoryFilter: "Kategorien",
+    selectedCategories: "Ausgewählte Kategorien",
+    resetFilters: "Filter zurücksetzen",
     soonestFirst: "Nächste zuerst",
     latestFirst: "Spätere zuerst",
     hidePastFairs: "Vergangene Messen ausblenden",
+    noFilterResultsTitle: "Keine Messen gefunden",
     noUpcomingTitle: "Keine kommenden veröffentlichten Messen sichtbar",
     noUpcomingText:
       "Deaktiviere Vergangene Messen ausblenden, um vergangene veröffentlichte Messen anzuzeigen.",
@@ -250,9 +265,14 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     organizer: "主催者",
     details: "詳細を見る",
     officialWebsite: "公式サイト",
+    searchPlaceholder: "展示会を検索",
+    categoryFilter: "カテゴリ",
+    selectedCategories: "選択中のカテゴリ",
+    resetFilters: "フィルターをリセット",
     soonestFirst: "近い日程順",
     latestFirst: "遅い日程順",
     hidePastFairs: "過去の展示会を非表示",
+    noFilterResultsTitle: "展示会が見つかりません",
     noUpcomingTitle: "表示できる今後の公開済み展示会はありません",
     noUpcomingText:
       "過去の展示会も表示するには、過去の展示会を非表示をオフにしてください。",

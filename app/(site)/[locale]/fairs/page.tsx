@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getPublishedFairs } from "@/lib/fairs";
+import { getPublicFairCategories, getPublishedFairs } from "@/lib/fairs";
 import FairsListClient from "@/components/website/FairsListClient";
 import { getFairCopy } from "@/lib/website/fairCopy";
 
@@ -28,7 +28,10 @@ export default async function LocalizedFairsPage({
 }: LocalizedFairsPageProps) {
   const { locale } = await params;
   const copy = getFairCopy(locale);
-  const fairs = await getPublishedFairs();
+  const [fairs, categories] = await Promise.all([
+    getPublishedFairs(),
+    getPublicFairCategories(),
+  ]);
 
   return (
     <section className="space-y-8">
@@ -64,7 +67,12 @@ export default async function LocalizedFairsPage({
             <p className="mt-2 leading-7 text-slate-700">{copy.emptyText}</p>
           </div>
         ) : (
-          <FairsListClient fairs={fairs} locale={locale} copy={copy} />
+          <FairsListClient
+            fairs={fairs}
+            categories={categories}
+            locale={locale}
+            copy={copy}
+          />
         )}
       </div>
     </section>
