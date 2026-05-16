@@ -234,7 +234,7 @@ function buildCategoryTreeData(
   const fallbackCategoriesByKey = new Map<string, WebsiteFairCategory>();
 
   for (const fair of fairs) {
-    for (const categoryId of publicCategoryIds(fair.categories)) {
+    for (const categoryId of publicCategoryIds(fair.categoryIds)) {
       const key = categoryKey(categoryId);
       usedCategoryKeys.add(key);
 
@@ -423,7 +423,7 @@ function fairSearchValues(
     fair.description,
     ...Object.values(fair.localizedDescriptions),
     fair.officialWebsite,
-    ...publicCategoryIds(fair.categories).flatMap((categoryId) =>
+    ...publicCategoryIds(fair.categoryIds).flatMap((categoryId) =>
       categoryLabelsForSearch(categoryId, categoriesByKey, locale),
     ),
   ].filter((value): value is string => Boolean(value?.trim()));
@@ -454,7 +454,7 @@ function fairMatchesSelectedCategories(
     return true;
   }
 
-  return publicCategoryIds(fair.categories).some((categoryId) =>
+  return publicCategoryIds(fair.categoryIds).some((categoryId) =>
     selectedCategoryKeys.has(categoryKey(categoryId)),
   );
 }
@@ -870,9 +870,9 @@ export default function FairsListClient({
                       </div>
                     </div>
 
-                    {publicCategoryIds(fair.categories).length > 0 ? (
+                    {publicCategoryIds(fair.categoryIds).length > 0 ? (
                       <div className="mt-4 flex flex-wrap gap-2">
-                        {publicCategoryIds(fair.categories).map((categoryId) => (
+                        {publicCategoryIds(fair.categoryIds).map((categoryId) => (
                           <span
                             key={categoryId}
                             className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700"

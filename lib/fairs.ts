@@ -60,6 +60,8 @@ export type WebsiteFair = {
   countryISO: string;
   startDate: Date | null;
   endDate: Date | null;
+  categoryIds: string[];
+  primaryCategoryId?: string;
   categories: string[];
   description?: string;
   localizedDescriptions: Record<string, string>;
@@ -93,6 +95,8 @@ type FirestoreFairDocument = {
   countryISO?: string;
   startDate?: Timestamp;
   endDate?: Timestamp;
+  categoryIds?: string[];
+  primaryCategoryId?: string;
   categories?: string[];
   officialWebsite?: string;
   organizerName?: string;
@@ -154,15 +158,16 @@ function isTechnicalPublicCategory(categoryId: string): boolean {
   return TECHNICAL_PUBLIC_CATEGORIES.has(normalizedCategoryKey(categoryId));
 }
 
-function publicFairCategories(categories: string[] | undefined): string[] {
-  if (!Array.isArray(categories)) {
-    return [];
-  }
-
+export function publicFairCategoryIds(
+  categories: Array<string | null | undefined> | undefined,
+): string[] {
   const seen = new Set<string>();
-  return categories
-    .map((category) => category.trim())
-    .filter((category) => {
+  return (categories ?? [])
+    .map((category) => normalizedText(category))
+    .filter((category): category is string => {
+      if (!category) {
+        return false;
+      }
       const normalized = normalizedCategoryKey(category);
       if (!category || TECHNICAL_PUBLIC_CATEGORIES.has(normalized)) {
         return false;
@@ -173,6 +178,15 @@ function publicFairCategories(categories: string[] | undefined): string[] {
       seen.add(normalized);
       return true;
     });
+}
+
+function publicPrimaryCategoryId(
+  primaryCategoryId: string | undefined,
+): string | undefined {
+  const normalized = normalizedText(primaryCategoryId);
+  return normalized && !isTechnicalPublicCategory(normalized)
+    ? normalized
+    : undefined;
 }
 
 function normalizedText(value: unknown): string | undefined {
@@ -287,6 +301,13 @@ function mapFairCategoryDocument(
 }
 
 function mapFairDocument(documentId: string, data: FirestoreFairDocument): WebsiteFair {
+  const primaryCategoryId = publicPrimaryCategoryId(data.primaryCategoryId);
+  const categoryIds = publicFairCategoryIds([
+    primaryCategoryId,
+    ...(Array.isArray(data.categoryIds) ? data.categoryIds : []),
+    ...(Array.isArray(data.categories) ? data.categories : []),
+  ]);
+
   return {
     id: formatFallbackId(documentId, data),
     name: data.name ?? "Untitled fair",
@@ -294,7 +315,15 @@ function mapFairDocument(documentId: string, data: FirestoreFairDocument): Websi
     countryISO: data.countryISO ?? "",
     startDate: toDate(data.startDate),
     endDate: toDate(data.endDate),
-    categories: publicFairCategories(data.categories),
+    categoryIds,
+    primaryCategoryId: primaryCategoryId
+      ? categoryIds.find(
+          (categoryId) =>
+            normalizedCategoryKey(categoryId) ===
+            normalizedCategoryKey(primaryCategoryId),
+        )
+      : undefined,
+    categories: categoryIds,
     description: normalizedText(data.description),
     localizedDescriptions: localizedDescriptions(data.localized),
     officialWebsite: data.officialWebsite,
@@ -585,6 +614,38 @@ export async function getPublicFairCategories(): Promise<WebsiteFairCategory[]> 
 
       return a.id.localeCompare(b.id);
     });
+}
+
+function localizedFairCategoryFallbackCodes(locale: string): string[] {
+  const normalizedLocale = normalizeLocaleKey(locale);
+  return [...new Set([normalizedLocale, "en", "de"].filter(Boolean))];
+}
+
+export function localizedFairCategoryLabel(
+  category: WebsiteFairCategory,
+  locale: string,
+): string {
+  for (const localeCode of localizedFairCategoryFallbackCodes(locale)) {
+    const label = normalizedText(category.labels[localeCode]);
+    if (label) {
+      return label;
+    }
+  }
+
+  return category.id;
+}
+
+export function fairCategoryLabelById(
+  categoryId: string,
+  categories: WebsiteFairCategory[],
+  locale: string,
+): string {
+  const normalizedId = normalizedCategoryKey(categoryId);
+  const category = categories.find(
+    (candidate) => normalizedCategoryKey(candidate.id) === normalizedId,
+  );
+
+  return category ? localizedFairCategoryLabel(category, locale) : categoryId;
 }
 
 export async function getPublishedFairById(id: string): Promise<WebsiteFair | null> {

@@ -6,8 +6,10 @@ import {
   FairLifecycleNotice,
   FairUpdatesPanel,
 } from "@/components/website/FairBadges";
+import { FairCategoryChips } from "@/components/website/FairCategoryChips";
 import {
   formatFairDateRange,
+  getPublicFairCategories,
   getPublishedFairById,
   localizedFairDescription,
 } from "@/lib/fairs";
@@ -55,7 +57,10 @@ function formatUpdatedAt(date: Date | null, locale: string): string {
 
 export default async function FairDetailPage({ params }: FairDetailPageProps) {
   const { id } = await params;
-  const fair = await getPublishedFairById(id);
+  const [fair, categories] = await Promise.all([
+    getPublishedFairById(id),
+    getPublicFairCategories(),
+  ]);
 
   if (!fair) {
     notFound();
@@ -202,24 +207,12 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
             </dl>
           </section>
 
-          {fair.categories.length > 0 ? (
-            <section>
-              <h2 className="text-xl font-semibold text-slate-950">
-                {copy.categories}
-              </h2>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                {fair.categories.map((category) => (
-                  <span
-                    key={category}
-                    className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700"
-                  >
-                    {category}
-                  </span>
-                ))}
-              </div>
-            </section>
-          ) : null}
+          <FairCategoryChips
+            fair={fair}
+            categories={categories}
+            locale="en"
+            copy={copy}
+          />
         </div>
 
         <aside className="space-y-6 rounded-3xl border border-white/70 bg-white/90 p-8 shadow-sm backdrop-blur-xl">
