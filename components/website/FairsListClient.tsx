@@ -7,6 +7,7 @@ import {
   FairLifecycleNotice,
 } from "@/components/website/FairBadges";
 import {
+  formatFairTitleForDisplay,
   formatFairDateRange,
   type WebsiteFair,
   type WebsiteFairCategory,
@@ -816,7 +817,7 @@ export default function FairsListClient({
                             href={fairDetailPath(fair.id)}
                             className="hover:text-blue-700"
                           >
-                            {fair.name}
+                            {formatFairTitleForDisplay(fair.name, locale)}
                           </Link>
                         </h3>
 

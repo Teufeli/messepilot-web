@@ -198,6 +198,10 @@ function normalizedText(value: unknown): string | undefined {
   return trimmed.length > 0 ? trimmed : undefined;
 }
 
+export function formatFairTitleForDisplay(title: string, locale?: string): string {
+  return title.trim().toLocaleUpperCase(locale);
+}
+
 function finiteNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }

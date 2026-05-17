@@ -9,6 +9,7 @@ import {
 import { FairCategoryChips } from "@/components/website/FairCategoryChips";
 import {
   formatFairDateRange,
+  formatFairTitleForDisplay,
   getPublicFairCategories,
   getPublishedFairById,
   localizedFairDescription,
@@ -67,6 +68,7 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
   }
 
   const fairDescription = localizedFairDescription(fair, "en");
+  const fairDisplayTitle = formatFairTitleForDisplay(fair.name, "en");
   const mapURL =
     fair.latitude !== undefined && fair.longitude !== undefined
       ? `https://www.google.com/maps/search/?api=1&query=${fair.latitude},${fair.longitude}`
@@ -89,7 +91,7 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
             </p>
 
             <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
-              {fair.name}
+              {fairDisplayTitle}
             </h1>
 
             <FairLifecycleNotice fair={fair} copy={copy} />
@@ -164,7 +166,7 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
             <dl className="mt-5 divide-y divide-slate-200 rounded-2xl bg-slate-50">
               <div className="grid gap-1 px-5 py-4 sm:grid-cols-[180px_1fr]">
                 <dt className="font-medium text-slate-600">{copy.name}</dt>
-                <dd className="text-slate-950">{fair.name}</dd>
+                <dd className="text-slate-950">{fairDisplayTitle}</dd>
               </div>
 
               <div className="grid gap-1 px-5 py-4 sm:grid-cols-[180px_1fr]">
