@@ -622,7 +622,8 @@ export async function getPublicFairCategories(): Promise<WebsiteFairCategory[]> 
 
 function localizedFairCategoryFallbackCodes(locale: string): string[] {
   const normalizedLocale = normalizeLocaleKey(locale);
-  return [...new Set([normalizedLocale, "en", "de"].filter(Boolean))];
+  const baseLanguage = normalizedLocale.split("-")[0];
+  return [...new Set([normalizedLocale, baseLanguage, "en", "de"].filter(Boolean))];
 }
 
 export function localizedFairCategoryLabel(

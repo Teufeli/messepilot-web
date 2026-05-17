@@ -106,6 +106,29 @@ function persistLanguagePreference(languageCode: string) {
   }
 }
 
+function languageSelectAriaLabel(languageCode: string): string {
+  switch (languageCode) {
+    case "de":
+      return "Website-Sprache auswählen";
+    case "ja":
+      return "サイトの言語を選択";
+    case "es":
+      return "Seleccionar idioma del sitio";
+    case "fr":
+      return "Sélectionner la langue du site";
+    case "it":
+      return "Seleziona la lingua del sito";
+    case "bs":
+      return "Odaberite jezik web stranice";
+    case "hr":
+      return "Odaberite jezik web-stranice";
+    case "hi":
+      return "वेबसाइट की भाषा चुनें";
+    default:
+      return "Select website language";
+  }
+}
+
 export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -136,7 +159,7 @@ export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
   return (
     <label className="inline-flex items-center">
       <select
-        aria-label="Select website language"
+        aria-label={languageSelectAriaLabel(currentLanguage.languageCode)}
         value={currentLanguage.languageCode}
         onChange={(event) => {
           const selectedLanguage = sortedLanguages.find(

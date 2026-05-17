@@ -9,9 +9,14 @@ import type {
   WebsiteNavigationContent,
   WebsiteNavigationItem,
 } from "@/lib/website/navigationContent";
+import {
+  defaultWebsiteLocaleCode,
+  isSupportedWebsiteLocale,
+  type WebsiteLocaleCode,
+} from "@/lib/website/i18n";
 import type { WebsiteLanguage } from "@/lib/websiteLanguages";
 
-type Locale = "en" | "de" | "ja";
+type Locale = WebsiteLocaleCode;
 
 const fallbackLanguages: WebsiteLanguage[] = [
   {
@@ -39,6 +44,60 @@ const fallbackLanguages: WebsiteLanguage[] = [
     flagEmoji: "🇯🇵",
     routePrefix: "ja",
     sortOrder: 30,
+    isFallback: false,
+  },
+  {
+    languageCode: "es",
+    displayName: "Spanish",
+    nativeName: "Español",
+    flagEmoji: "🇪🇸",
+    routePrefix: "es",
+    sortOrder: 40,
+    isFallback: false,
+  },
+  {
+    languageCode: "fr",
+    displayName: "French",
+    nativeName: "Français",
+    flagEmoji: "🇫🇷",
+    routePrefix: "fr",
+    sortOrder: 50,
+    isFallback: false,
+  },
+  {
+    languageCode: "it",
+    displayName: "Italian",
+    nativeName: "Italiano",
+    flagEmoji: "🇮🇹",
+    routePrefix: "it",
+    sortOrder: 60,
+    isFallback: false,
+  },
+  {
+    languageCode: "bs",
+    displayName: "Bosnian",
+    nativeName: "Bosanski",
+    flagEmoji: "🇧🇦",
+    routePrefix: "bs",
+    sortOrder: 70,
+    isFallback: false,
+  },
+  {
+    languageCode: "hr",
+    displayName: "Croatian",
+    nativeName: "Hrvatski",
+    flagEmoji: "🇭🇷",
+    routePrefix: "hr",
+    sortOrder: 80,
+    isFallback: false,
+  },
+  {
+    languageCode: "hi",
+    displayName: "Hindi",
+    nativeName: "हिन्दी",
+    flagEmoji: "🇮🇳",
+    routePrefix: "hi",
+    sortOrder: 90,
     isFallback: false,
   },
 ];
@@ -75,6 +134,72 @@ const fallbackNavigationByLocale: Record<Locale, WebsiteNavigationContent> = {
       { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
       { itemKey: "privacy", label: "プライバシー", href: "/privacy", isVisible: true, sortOrder: 40 },
       { itemKey: "support", label: "サポート", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
+  },
+  es: {
+    locale: "es",
+    menuLabel: "Menú",
+    items: [
+      { itemKey: "home", label: "Inicio", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "Ferias", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "Privacidad", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "Soporte", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
+  },
+  fr: {
+    locale: "fr",
+    menuLabel: "Menu",
+    items: [
+      { itemKey: "home", label: "Accueil", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "Salons", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "Confidentialité", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "Support", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
+  },
+  it: {
+    locale: "it",
+    menuLabel: "Menu",
+    items: [
+      { itemKey: "home", label: "Home", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "Fiere", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "Privacy", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "Supporto", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
+  },
+  bs: {
+    locale: "bs",
+    menuLabel: "Meni",
+    items: [
+      { itemKey: "home", label: "Početna", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "Sajmovi", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "Privatnost", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "Podrška", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
+  },
+  hr: {
+    locale: "hr",
+    menuLabel: "Izbornik",
+    items: [
+      { itemKey: "home", label: "Početna", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "Sajmovi", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "Privatnost", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "Podrška", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
+  },
+  hi: {
+    locale: "hi",
+    menuLabel: "मेन्यू",
+    items: [
+      { itemKey: "home", label: "होम", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "मेले", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "गोपनीयता", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "सहायता", href: "/support", isVisible: true, sortOrder: 50 },
     ],
   },
 };
@@ -119,11 +244,11 @@ function getCurrentLanguage(
 }
 
 function knownLocale(languageCode: string): Locale {
-  if (languageCode === "de" || languageCode === "ja") {
+  if (isSupportedWebsiteLocale(languageCode)) {
     return languageCode;
   }
 
-  return "en";
+  return defaultWebsiteLocaleCode;
 }
 
 function localizedPath(language: WebsiteLanguage, path: string): string {
@@ -250,7 +375,7 @@ export default function WebsiteNavigation() {
   return (
     <div className="flex w-full flex-wrap items-center justify-center gap-6 text-sm sm:w-auto sm:justify-end">
       <nav
-        aria-label="Main navigation"
+        aria-label={navigationContent.menuLabel}
         className="flex flex-wrap items-center justify-center gap-2 sm:justify-end"
       >
         {navItems.map((item) => {

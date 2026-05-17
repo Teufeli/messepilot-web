@@ -79,10 +79,9 @@ function compareFaqs(a: PublicHelpCenterFAQ, b: PublicHelpCenterFAQ): number {
   );
 }
 
-export async function getWebsiteFAQSections(
-  languageCode: string,
+async function getWebsiteFAQSectionsForLanguage(
+  normalizedLanguageCode: string,
 ): Promise<WebsiteFAQSection[]> {
-  const normalizedLanguageCode = normalizeLanguageCode(languageCode);
   const faqsSnapshot = await getDocs(
     collection(
       helpCenterPublishedDoc,
@@ -163,4 +162,20 @@ export async function getWebsiteFAQSections(
         })),
     }))
     .filter((section) => section.categories.length > 0);
+}
+
+export async function getWebsiteFAQSections(
+  languageCode: string,
+): Promise<WebsiteFAQSection[]> {
+  const requestedLanguageCode = normalizeLanguageCode(languageCode);
+  const fallbackLanguageCodes = [...new Set([requestedLanguageCode, "en", "de"])];
+
+  for (const fallbackLanguageCode of fallbackLanguageCodes) {
+    const sections = await getWebsiteFAQSectionsForLanguage(fallbackLanguageCode);
+    if (sections.length > 0) {
+      return sections;
+    }
+  }
+
+  return [];
 }

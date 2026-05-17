@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import { getWebsiteFAQSections } from "@/lib/helpCenter";
 import FAQAccordionClient from "@/components/website/FAQAccordionClient";
+import { getFAQPageCopy } from "@/lib/website/staticPageCopy";
 
 export const dynamic = "force-dynamic";
 
+const copy = getFAQPageCopy("en");
+
 export const metadata: Metadata = {
-  title: "FAQ | MessePilot",
-  description: "Frequently asked questions about MessePilot.",
+  title: copy.title,
+  description: copy.description,
 };
 
 export default async function FAQPage() {
@@ -26,14 +29,13 @@ export default async function FAQPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/60 via-slate-900/35 to-transparent" />
         <div className="relative space-y-4 px-8 py-16 sm:px-12 sm:py-20">
           <p className="text-sm font-medium uppercase tracking-[0.22em] text-slate-100">
-            FAQ
+            {copy.eyebrow}
           </p>
           <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-            Frequently Asked Questions
+            {copy.headline}
           </h1>
           <p className="max-w-3xl text-lg leading-8 text-slate-100">
-            Answers to common questions about MessePilot, beta access, privacy,
-            files, booths and support.
+            {copy.intro}
           </p>
         </div>
       </div>
@@ -42,10 +44,10 @@ export default async function FAQPage() {
         {faqSections.length === 0 ? (
           <div>
             <h2 className="text-2xl font-semibold text-slate-950">
-              No published FAQs yet
+              {copy.emptyTitle}
             </h2>
             <p className="mt-2 leading-7 text-slate-700">
-              FAQ content is currently being prepared.
+              {copy.emptyText}
             </p>
           </div>
         ) : (

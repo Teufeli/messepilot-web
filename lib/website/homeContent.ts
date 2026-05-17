@@ -1,6 +1,11 @@
 import { client } from "@/sanity/lib/client";
+import {
+  defaultWebsiteLocaleCode,
+  supportedWebsiteLocaleCodes,
+  type WebsiteLocaleCode,
+} from "@/lib/website/i18n";
 
-export type WebsiteLocale = "en" | "de" | "ja";
+export type WebsiteLocale = WebsiteLocaleCode;
 
 export type HomeContent = {
   locale: WebsiteLocale;
@@ -30,9 +35,11 @@ type SanityWebsitePage = {
   translations?: SanityWebsitePageTranslation[];
 };
 
-export const supportedWebsiteLocales: WebsiteLocale[] = ["en", "de", "ja"];
+export const supportedWebsiteLocales: WebsiteLocale[] = [
+  ...supportedWebsiteLocaleCodes,
+];
 
-export const defaultWebsiteLocale: WebsiteLocale = "en";
+export const defaultWebsiteLocale: WebsiteLocale = defaultWebsiteLocaleCode;
 
 const fallbackPrimaryButtonHref =
   "mailto:support@messepilot.ch?subject=MessePilot%20Beta%20Access%20Request&body=Hello%20MessePilot%20Team%2C%0A%0AI%20would%20like%20to%20request%20access%20to%20the%20MessePilot%20private%20beta.%0A%0AName%3A%0ACompany%3A%0ARole%3A%0ACountry%3A%0ADevice%3A%0AReason%20for%20beta%20access%3A%0A%0ABy%20submitting%20this%20request%2C%20I%20confirm%20that%20the%20information%20provided%20may%20be%20used%20to%20review%20my%20beta%20access%20request%2C%20contact%20me%20regarding%20MessePilot%20and%20manage%20my%20beta%20participation.%0A%0AI%20understand%20that%20MessePilot%20is%20currently%20in%20private%20beta.%20I%20agree%20to%20treat%20all%20non-public%20information%2C%20screenshots%2C%20unpublished%20features%2C%20internal%20test%20details%2C%20access%20links%20and%20beta-related%20material%20as%20confidential.%20I%20will%20not%20copy%2C%20publish%2C%20forward%2C%20distribute%20or%20otherwise%20share%20such%20information%20with%20third%20parties%20without%20prior%20written%20permission.%0A%0ABest%20regards%0A";
@@ -80,6 +87,90 @@ export const fallbackHomeContent: Record<WebsiteLocale, HomeContent> = {
     primaryButtonNote:
       "MessePilot は現在、プライベートベータ版です。アクセスは手動で審査されます。申請時に提供された情報は、ベータアクセスの審査、MessePilot に関する連絡、およびベータ参加の管理に使用される場合があります。スクリーンショット、未公開機能、内部テスト情報、アクセスリンクを事前の許可なく公開または共有しないでください。",
   },
+  es: {
+    locale: "es",
+    seoTitle: "MessePilot | Planificación de ferias simplificada",
+    seoDescription:
+      "MessePilot ayuda a planificar ferias y gestionar booths, notas, tareas, contactos, fotos, videos y documentos.",
+    heroEyebrow: "MessePilot",
+    heroTitle: "Planificación de ferias simplificada.",
+    heroText:
+      "MessePilot ayuda a planificar ferias y organizar booths, notas, tareas, contactos, fotos, videos y documentos en un solo lugar.",
+    primaryButtonLabel: "Solicitar acceso beta",
+    primaryButtonHref: fallbackPrimaryButtonHref,
+    primaryButtonNote:
+      "MessePilot está actualmente en beta privada. El acceso se revisa manualmente. Al solicitar acceso, aceptas que la información proporcionada se utilice para revisar tu solicitud, contactarte sobre MessePilot y gestionar tu acceso beta. También aceptas no compartir públicamente capturas de pantalla, funciones no publicadas, detalles internos de prueba ni enlaces de acceso sin permiso previo.",
+  },
+  fr: {
+    locale: "fr",
+    seoTitle: "MessePilot | Planification de salons simplifiée",
+    seoDescription:
+      "MessePilot aide à planifier des salons et à gérer booths, notes, tâches, contacts, photos, vidéos et documents.",
+    heroEyebrow: "MessePilot",
+    heroTitle: "La planification de salons simplifiée.",
+    heroText:
+      "MessePilot aide à planifier des salons et à organiser booths, notes, tâches, contacts, photos, vidéos et documents au même endroit.",
+    primaryButtonLabel: "Demander l'accès bêta",
+    primaryButtonHref: fallbackPrimaryButtonHref,
+    primaryButtonNote:
+      "MessePilot est actuellement en bêta privée. L'accès est vérifié manuellement. En demandant l'accès, vous acceptez que les informations fournies soient utilisées pour examiner votre demande, vous contacter au sujet de MessePilot et gérer votre accès bêta. Vous acceptez également de ne pas partager publiquement captures d'écran, fonctionnalités non publiées, détails de test internes ou liens d'accès sans autorisation préalable.",
+  },
+  it: {
+    locale: "it",
+    seoTitle: "MessePilot | Pianificazione fiere semplificata",
+    seoDescription:
+      "MessePilot aiuta a pianificare fiere e gestire booth, note, attività, contatti, foto, video e documenti.",
+    heroEyebrow: "MessePilot",
+    heroTitle: "Pianificazione fiere semplificata.",
+    heroText:
+      "MessePilot aiuta a pianificare fiere e a organizzare booth, note, attività, contatti, foto, video e documenti in un unico posto.",
+    primaryButtonLabel: "Richiedi accesso beta",
+    primaryButtonHref: fallbackPrimaryButtonHref,
+    primaryButtonNote:
+      "MessePilot è attualmente in beta privata. L'accesso viene verificato manualmente. Richiedendo l'accesso, accetti che le informazioni fornite siano usate per valutare la richiesta, contattarti su MessePilot e gestire il tuo accesso beta. Accetti inoltre di non condividere pubblicamente screenshot, funzionalità non pubblicate, dettagli di test interni o link di accesso senza autorizzazione preventiva.",
+  },
+  bs: {
+    locale: "bs",
+    seoTitle: "MessePilot | Jednostavnije planiranje sajmova",
+    seoDescription:
+      "MessePilot pomaže pri planiranju sajmova i upravljanju boothovima, bilješkama, zadacima, kontaktima, fotografijama, videozapisima i dokumentima.",
+    heroEyebrow: "MessePilot",
+    heroTitle: "Jednostavnije planiranje sajmova.",
+    heroText:
+      "MessePilot pomaže pri planiranju sajmova i organizaciji boothova, bilješki, zadataka, kontakata, fotografija, videozapisa i dokumenata na jednom mjestu.",
+    primaryButtonLabel: "Zatraži beta pristup",
+    primaryButtonHref: fallbackPrimaryButtonHref,
+    primaryButtonNote:
+      "MessePilot je trenutno u privatnoj beta verziji. Pristup se provjerava ručno. Slanjem zahtjeva prihvatate da se dostavljene informacije koriste za pregled beta zahtjeva, kontaktiranje u vezi s MessePilotom i upravljanje beta pristupom. Također prihvatate da bez prethodne dozvole ne dijelite javno snimke ekrana, neobjavljene funkcije, interne detalje testiranja ili pristupne linkove.",
+  },
+  hr: {
+    locale: "hr",
+    seoTitle: "MessePilot | Jednostavnije planiranje sajmova",
+    seoDescription:
+      "MessePilot pomaže planirati sajmove i upravljati boothovima, bilješkama, zadacima, kontaktima, fotografijama, videozapisima i dokumentima.",
+    heroEyebrow: "MessePilot",
+    heroTitle: "Jednostavnije planiranje sajmova.",
+    heroText:
+      "MessePilot pomaže planirati sajmove i organizirati boothove, bilješke, zadatke, kontakte, fotografije, videozapise i dokumente na jednom mjestu.",
+    primaryButtonLabel: "Zatraži beta pristup",
+    primaryButtonHref: fallbackPrimaryButtonHref,
+    primaryButtonNote:
+      "MessePilot je trenutačno u privatnoj beta verziji. Pristup se provjerava ručno. Slanjem zahtjeva pristajete da se dostavljene informacije koriste za pregled beta zahtjeva, kontaktiranje u vezi s MessePilotom i upravljanje beta pristupom. Također pristajete da bez prethodnog dopuštenja ne dijelite javno snimke zaslona, neobjavljene značajke, interne detalje testiranja ili pristupne poveznice.",
+  },
+  hi: {
+    locale: "hi",
+    seoTitle: "MessePilot | व्यापार मेलों की योजना आसान",
+    seoDescription:
+      "MessePilot व्यापार मेलों की योजना बनाने और booth, नोट, कार्य, संपर्क, फोटो, वीडियो और दस्तावेज प्रबंधित करने में मदद करता है।",
+    heroEyebrow: "MessePilot",
+    heroTitle: "व्यापार मेलों की योजना आसान।",
+    heroText:
+      "MessePilot व्यापार मेलों की योजना बनाने और booth, नोट, कार्य, संपर्क, फोटो, वीडियो और दस्तावेजों को एक जगह व्यवस्थित करने में मदद करता है।",
+    primaryButtonLabel: "बीटा एक्सेस का अनुरोध करें",
+    primaryButtonHref: fallbackPrimaryButtonHref,
+    primaryButtonNote:
+      "MessePilot अभी निजी बीटा में है। एक्सेस की समीक्षा मैन्युअल रूप से की जाती है। एक्सेस का अनुरोध करके आप सहमत होते हैं कि दी गई जानकारी का उपयोग आपके बीटा अनुरोध की समीक्षा, MessePilot के बारे में आपसे संपर्क करने और आपके बीटा एक्सेस को प्रबंधित करने के लिए किया जा सकता है। आप यह भी सहमत होते हैं कि पूर्व अनुमति के बिना स्क्रीनशॉट, अप्रकाशित सुविधाएं, आंतरिक परीक्षण विवरण या एक्सेस लिंक सार्वजनिक रूप से साझा नहीं करेंगे।",
+  },
 };
 
 export function isWebsiteLocale(locale: string): locale is WebsiteLocale {
@@ -126,7 +217,7 @@ function pickTranslation(
     return requestedTranslation;
   }
 
-  return translations.find((translation) => translation.languageCode === defaultWebsiteLocale);
+  return undefined;
 }
 
 function buildHomeContentFromTranslation(

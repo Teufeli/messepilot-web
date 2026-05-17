@@ -35,8 +35,6 @@ type SanityWebsiteNavigation = {
   translations?: SanityNavigationTranslation[];
 };
 
-const defaultWebsiteLocale: WebsiteLocale = "en";
-
 const navigationHrefByKey: Record<NavigationItemKey, string> = {
   home: "/",
   fairs: "/fairs",
@@ -79,6 +77,72 @@ const fallbackNavigationContent: Record<WebsiteLocale, WebsiteNavigationContent>
       { itemKey: "support", label: "サポート", href: "/support", isVisible: true, sortOrder: 50 },
     ],
   },
+  es: {
+    locale: "es",
+    menuLabel: "Menú",
+    items: [
+      { itemKey: "home", label: "Inicio", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "Ferias", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "Privacidad", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "Soporte", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
+  },
+  fr: {
+    locale: "fr",
+    menuLabel: "Menu",
+    items: [
+      { itemKey: "home", label: "Accueil", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "Salons", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "Confidentialité", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "Support", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
+  },
+  it: {
+    locale: "it",
+    menuLabel: "Menu",
+    items: [
+      { itemKey: "home", label: "Home", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "Fiere", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "Privacy", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "Supporto", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
+  },
+  bs: {
+    locale: "bs",
+    menuLabel: "Meni",
+    items: [
+      { itemKey: "home", label: "Početna", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "Sajmovi", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "Privatnost", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "Podrška", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
+  },
+  hr: {
+    locale: "hr",
+    menuLabel: "Izbornik",
+    items: [
+      { itemKey: "home", label: "Početna", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "Sajmovi", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "Privatnost", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "Podrška", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
+  },
+  hi: {
+    locale: "hi",
+    menuLabel: "मेन्यू",
+    items: [
+      { itemKey: "home", label: "होम", href: "/", isVisible: true, sortOrder: 10 },
+      { itemKey: "fairs", label: "मेले", href: "/fairs", isVisible: true, sortOrder: 20 },
+      { itemKey: "faq", label: "FAQ", href: "/faq", isVisible: true, sortOrder: 30 },
+      { itemKey: "privacy", label: "गोपनीयता", href: "/privacy", isVisible: true, sortOrder: 40 },
+      { itemKey: "support", label: "सहायता", href: "/support", isVisible: true, sortOrder: 50 },
+    ],
+  },
 };
 
 function isNavigationItemKey(value: string | undefined): value is NavigationItemKey {
@@ -119,7 +183,7 @@ function pickTranslation(
     return requestedTranslation;
   }
 
-  return translations.find((translation) => translation.languageCode === defaultWebsiteLocale);
+  return undefined;
 }
 
 function buildNavigationContentFromTranslation(

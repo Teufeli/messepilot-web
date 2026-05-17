@@ -1,5 +1,6 @@
 import { collection, getDocs, query, where } from "firebase/firestore/lite";
 import { db } from "./firebase";
+import { isSupportedWebsiteLocale } from "@/lib/website/i18n";
 
 export type WebsiteLanguage = {
   languageCode: string;
@@ -51,15 +52,69 @@ export const fallbackWebsiteLanguages: WebsiteLanguage[] = [
     sortOrder: 30,
     isFallback: false,
   },
+  {
+    languageCode: "es",
+    displayName: "Spanish",
+    nativeName: "Español",
+    flagEmoji: "🇪🇸",
+    routePrefix: "es",
+    sortOrder: 40,
+    isFallback: false,
+  },
+  {
+    languageCode: "fr",
+    displayName: "French",
+    nativeName: "Français",
+    flagEmoji: "🇫🇷",
+    routePrefix: "fr",
+    sortOrder: 50,
+    isFallback: false,
+  },
+  {
+    languageCode: "it",
+    displayName: "Italian",
+    nativeName: "Italiano",
+    flagEmoji: "🇮🇹",
+    routePrefix: "it",
+    sortOrder: 60,
+    isFallback: false,
+  },
+  {
+    languageCode: "bs",
+    displayName: "Bosnian",
+    nativeName: "Bosanski",
+    flagEmoji: "🇧🇦",
+    routePrefix: "bs",
+    sortOrder: 70,
+    isFallback: false,
+  },
+  {
+    languageCode: "hr",
+    displayName: "Croatian",
+    nativeName: "Hrvatski",
+    flagEmoji: "🇭🇷",
+    routePrefix: "hr",
+    sortOrder: 80,
+    isFallback: false,
+  },
+  {
+    languageCode: "hi",
+    displayName: "Hindi",
+    nativeName: "हिन्दी",
+    flagEmoji: "🇮🇳",
+    routePrefix: "hi",
+    sortOrder: 90,
+    isFallback: false,
+  },
 ];
 
 function normalizeLanguage(
   documentId: string,
   data: FirestoreLanguageDocument,
 ): WebsiteLanguage | null {
-  const languageCode = data.languageCode || documentId;
+  const languageCode = (data.languageCode || documentId).trim().toLowerCase();
 
-  if (!languageCode) {
+  if (!isSupportedWebsiteLocale(languageCode)) {
     return null;
   }
 

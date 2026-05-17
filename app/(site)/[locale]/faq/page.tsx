@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getWebsiteFAQSections } from "@/lib/helpCenter";
 import FAQAccordionClient from "@/components/website/FAQAccordionClient";
+import { getFAQPageCopy } from "@/lib/website/staticPageCopy";
 
 export const dynamic = "force-dynamic";
 
@@ -10,56 +11,11 @@ type LocalizedFAQPageProps = {
   }>;
 };
 
-const localizedCopy: Record<
-  string,
-  {
-    title: string;
-    description: string;
-    eyebrow: string;
-    headline: string;
-    intro: string;
-    emptyTitle: string;
-    emptyText: string;
-  }
-> = {
-  de: {
-    title: "FAQ | MessePilot",
-    description: "Häufig gestellte Fragen zu MessePilot.",
-    eyebrow: "FAQ",
-    headline: "Häufig gestellte Fragen",
-    intro:
-      "Antworten auf häufige Fragen zu MessePilot, Beta-Zugang, Datenschutz, Dateien, Ständen und Support.",
-    emptyTitle: "Noch keine veröffentlichten FAQs",
-    emptyText: "Die FAQ-Inhalte werden aktuell vorbereitet.",
-  },
-  ja: {
-    title: "FAQ | MessePilot",
-    description: "MessePilot に関するよくある質問。",
-    eyebrow: "FAQ",
-    headline: "よくある質問",
-    intro:
-      "MessePilot、ベータアクセス、プライバシー、ファイル、ブース、サポートに関するよくある質問です。",
-    emptyTitle: "公開済みの FAQ はまだありません",
-    emptyText: "FAQ コンテンツは現在準備中です。",
-  },
-};
-
-const fallbackCopy = {
-  title: "FAQ | MessePilot",
-  description: "Frequently asked questions about MessePilot.",
-  eyebrow: "FAQ",
-  headline: "Frequently Asked Questions",
-  intro:
-    "Answers to common questions about MessePilot, beta access, privacy, files, booths and support.",
-  emptyTitle: "No published FAQs yet",
-  emptyText: "FAQ content is currently being prepared.",
-};
-
 export async function generateMetadata({
   params,
 }: LocalizedFAQPageProps): Promise<Metadata> {
   const { locale } = await params;
-  const copy = localizedCopy[locale] ?? fallbackCopy;
+  const copy = getFAQPageCopy(locale);
 
   return {
     title: copy.title,
@@ -71,7 +27,7 @@ export default async function LocalizedFAQPage({
   params,
 }: LocalizedFAQPageProps) {
   const { locale } = await params;
-  const copy = localizedCopy[locale] ?? fallbackCopy;
+  const copy = getFAQPageCopy(locale);
   const faqSections = await getWebsiteFAQSections(locale);
 
   return (

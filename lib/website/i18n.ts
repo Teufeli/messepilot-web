@@ -1,6 +1,16 @@
 export const websiteLocaleCookieName = "messepilot_locale";
 export const websiteLocaleStorageKey = "messepilot.locale";
-export const supportedWebsiteLocaleCodes = ["en", "de", "ja"] as const;
+export const supportedWebsiteLocaleCodes = [
+  "en",
+  "de",
+  "ja",
+  "es",
+  "fr",
+  "it",
+  "bs",
+  "hr",
+  "hi",
+] as const;
 
 export type WebsiteLocaleCode = (typeof supportedWebsiteLocaleCodes)[number];
 
@@ -10,6 +20,12 @@ export function isSupportedWebsiteLocale(
   locale: string | undefined,
 ): locale is WebsiteLocaleCode {
   return supportedWebsiteLocaleCodes.includes(locale as WebsiteLocaleCode);
+}
+
+export function websiteLocaleOrDefault(
+  locale: string | undefined,
+): WebsiteLocaleCode {
+  return isSupportedWebsiteLocale(locale) ? locale : defaultWebsiteLocaleCode;
 }
 
 export function localePathPrefix(locale: WebsiteLocaleCode): string {
