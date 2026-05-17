@@ -7,12 +7,17 @@ import {
   FairLifecycleNotice,
 } from "@/components/website/FairBadges";
 import {
+  FairDataDisclaimerNotice,
+  MissingFairSuggestionReport,
+} from "@/components/website/FairDataReports";
+import {
   formatFairTitleForDisplay,
   formatFairDateRange,
   type WebsiteFair,
   type WebsiteFairCategory,
 } from "@/lib/fairs";
 import type { FairPageCopy } from "@/lib/website/fairCopy";
+import type { FairDataReportCopy } from "@/lib/website/fairCopy";
 
 type SortOrder = "soonest" | "latest";
 
@@ -39,6 +44,7 @@ type FairsListClientProps = {
   categories: WebsiteFairCategory[];
   locale: string;
   copy: FairPageCopy;
+  reportCopy: FairDataReportCopy;
 };
 
 const TECHNICAL_CATEGORY_KEYS = new Set(["imported"]);
@@ -557,6 +563,7 @@ export default function FairsListClient({
   categories,
   locale,
   copy,
+  reportCopy,
 }: FairsListClientProps) {
   const [sortOrder, setSortOrder] = useState<SortOrder>("soonest");
   const [hidePastFairs, setHidePastFairs] = useState(true);
@@ -770,25 +777,48 @@ export default function FairsListClient({
         ) : null}
       </div>
 
+      <FairDataDisclaimerNotice copy={reportCopy.disclaimer} />
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm font-medium text-slate-600">
           {visibleFairs.length}{" "}
           {visibleFairs.length === 1 ? copy.fairSingular : copy.fairPlural}
         </p>
+
+        {groupedFairs.length > 0 ? (
+          <MissingFairSuggestionReport
+            copy={reportCopy}
+            locale={locale}
+            initialFairName={searchQuery}
+          />
+        ) : null}
       </div>
 
       {groupedFairs.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+        <div className="space-y-5 rounded-2xl border border-slate-200 bg-slate-50 p-6">
           <h2 className="text-2xl font-semibold text-slate-950">
-            {hasSearchOrCategoryFilter
+            {fairs.length === 0
+              ? copy.emptyTitle
+              : hasSearchOrCategoryFilter
               ? copy.noFilterResultsTitle
               : copy.noUpcomingTitle}
           </h2>
-          {!hasSearchOrCategoryFilter ? (
+          {fairs.length === 0 ? (
+            <p className="mt-2 leading-7 text-slate-700">
+              {copy.emptyText}
+            </p>
+          ) : !hasSearchOrCategoryFilter ? (
             <p className="mt-2 leading-7 text-slate-700">
               {copy.noUpcomingText}
             </p>
           ) : null}
+
+          <MissingFairSuggestionReport
+            copy={reportCopy}
+            locale={locale}
+            initialFairName={searchQuery}
+            variant="empty"
+          />
         </div>
       ) : (
         <div className="space-y-8">

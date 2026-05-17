@@ -8,16 +8,21 @@ import {
 } from "@/components/website/FairBadges";
 import { FairCategoryChips } from "@/components/website/FairCategoryChips";
 import {
+  ExistingFairCorrectionReport,
+  FairDataDisclaimerNotice,
+} from "@/components/website/FairDataReports";
+import {
   formatFairDateRange,
   formatFairTitleForDisplay,
   getPublicFairCategories,
   getPublishedFairById,
   localizedFairDescription,
 } from "@/lib/fairs";
-import { getFairCopy } from "@/lib/website/fairCopy";
+import { getFairCopy, getFairDataReportCopy } from "@/lib/website/fairCopy";
 
 export const dynamic = "force-dynamic";
 const copy = getFairCopy("en");
+const reportCopy = getFairDataReportCopy("en");
 
 type FairDetailPageProps = {
   params: Promise<{
@@ -251,6 +256,15 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
           <p className="text-sm leading-6 text-slate-600">
             {copy.detailNote}
           </p>
+
+          <FairDataDisclaimerNotice copy={reportCopy.disclaimer} />
+
+          <ExistingFairCorrectionReport
+            fair={fair}
+            categories={categories}
+            locale="en"
+            copy={reportCopy}
+          />
         </aside>
       </div>
     </section>

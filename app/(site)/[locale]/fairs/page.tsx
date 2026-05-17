@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getPublicFairCategories, getPublishedFairs } from "@/lib/fairs";
 import FairsListClient from "@/components/website/FairsListClient";
-import { getFairCopy } from "@/lib/website/fairCopy";
+import { getFairCopy, getFairDataReportCopy } from "@/lib/website/fairCopy";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +28,7 @@ export default async function LocalizedFairsPage({
 }: LocalizedFairsPageProps) {
   const { locale } = await params;
   const copy = getFairCopy(locale);
+  const reportCopy = getFairDataReportCopy(locale);
   const [fairs, categories] = await Promise.all([
     getPublishedFairs(),
     getPublicFairCategories(),
@@ -59,21 +60,13 @@ export default async function LocalizedFairsPage({
       </div>
 
       <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-sm backdrop-blur-xl sm:p-8">
-        {fairs.length === 0 ? (
-          <div>
-            <h2 className="text-2xl font-semibold text-slate-950">
-              {copy.emptyTitle}
-            </h2>
-            <p className="mt-2 leading-7 text-slate-700">{copy.emptyText}</p>
-          </div>
-        ) : (
-          <FairsListClient
-            fairs={fairs}
-            categories={categories}
-            locale={locale}
-            copy={copy}
-          />
-        )}
+        <FairsListClient
+          fairs={fairs}
+          categories={categories}
+          locale={locale}
+          copy={copy}
+          reportCopy={reportCopy}
+        />
       </div>
     </section>
   );

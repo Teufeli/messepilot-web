@@ -27,6 +27,66 @@ type ChangeEventCopyKey =
   | "lifecycleStatusChanged"
   | "descriptionChanged";
 type ChangeEventText = Record<ChangeEventCopyKey, string>;
+export type FairDataReportTypeKey =
+  | "date"
+  | "location"
+  | "organizer"
+  | "officialWebsite"
+  | "categories"
+  | "description"
+  | "status"
+  | "duplicate"
+  | "other";
+
+export type FairDataReportCopy = {
+  disclaimer: {
+    title: string;
+    text: string;
+  };
+  existing: {
+    action: string;
+    title: string;
+    intro: string;
+  };
+  missing: {
+    action: string;
+    title: string;
+    intro: string;
+    helper: string;
+  };
+  reportType: Record<FairDataReportTypeKey, string>;
+  form: {
+    reportType: string;
+    message: string;
+    messagePlaceholder: string;
+    correctedValue: string;
+    contactEmail: string;
+    fairName: string;
+    city: string;
+    country: string;
+    startDate: string;
+    endDate: string;
+    dateText: string;
+    venue: string;
+    officialWebsite: string;
+    organizer: string;
+    sourceUrl: string;
+    note: string;
+    submit: string;
+    cancel: string;
+    close: string;
+    optional: string;
+    requiredHint: string;
+    invalidEmail: string;
+    invalidUrl: string;
+  };
+  result: {
+    successTitle: string;
+    successText: string;
+    errorTitle: string;
+    errorText: string;
+  };
+};
 
 export type FairPageCopy = {
   title: string;
@@ -877,8 +937,551 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
   },
 };
 
+export const fairDataReportCopyByLocale: Record<
+  WebsiteLocaleCode,
+  FairDataReportCopy
+> = {
+  en: {
+    disclaimer: {
+      title: "Notice about trade fair information",
+      text: "Trade fair information is compiled from public and official sources. Despite careful review, details may be incomplete or incorrect. Please also check important decisions on the official trade fair website.",
+    },
+    existing: {
+      action: "Report data error",
+      title: "Report a data error",
+      intro: "Tell us what should be checked. We review reports before any fair data changes.",
+    },
+    missing: {
+      action: "Report missing trade fair",
+      title: "Report a missing trade fair",
+      intro: "Send a few details about a trade fair that is not listed yet.",
+      helper: "Enter what you know. We will review it and add the rest.",
+    },
+    reportType: {
+      date: "Date",
+      location: "Location",
+      organizer: "Organizer",
+      officialWebsite: "Official website",
+      categories: "Categories",
+      description: "Description",
+      status: "Status",
+      duplicate: "Duplicate",
+      other: "Other",
+    },
+    form: {
+      reportType: "Type of issue",
+      message: "Message",
+      messagePlaceholder: "Describe what should be checked",
+      correctedValue: "Correct or suggested value",
+      contactEmail: "Contact email",
+      fairName: "Trade fair name",
+      city: "City or place",
+      country: "Country",
+      startDate: "Start date",
+      endDate: "End date",
+      dateText: "Date or period as text",
+      venue: "Venue",
+      officialWebsite: "Official website",
+      organizer: "Organizer",
+      sourceUrl: "Source link",
+      note: "Comment",
+      submit: "Send report",
+      cancel: "Cancel",
+      close: "Close",
+      optional: "optional",
+      requiredHint: "Please enter the trade fair name and city.",
+      invalidEmail: "Please enter a valid email address or leave the field empty.",
+      invalidUrl: "Please enter a valid http or https URL, or leave the field empty.",
+    },
+    result: {
+      successTitle: "Report sent",
+      successText: "Thank you. We will review the information before making changes.",
+      errorTitle: "Report could not be sent",
+      errorText: "Please try again in a moment.",
+    },
+  },
+  de: {
+    disclaimer: {
+      title: "Hinweis zu Messeinformationen",
+      text: "Die Messeinformationen werden aus öffentlichen und offiziellen Quellen zusammengestellt. Trotz sorgfältiger Prüfung können Angaben unvollständig oder fehlerhaft sein. Bitte prüfe wichtige Entscheidungen zusätzlich auf der offiziellen Messe-Website.",
+    },
+    existing: {
+      action: "Datenfehler melden",
+      title: "Datenfehler melden",
+      intro: "Sag uns, was geprüft werden soll. Wir prüfen Meldungen, bevor Messedaten geändert werden.",
+    },
+    missing: {
+      action: "Fehlende Messe melden",
+      title: "Fehlende Messe melden",
+      intro: "Sende wenige Angaben zu einer Messe, die noch nicht gelistet ist.",
+      helper: "Gib an, was du weisst. Wir prüfen und ergänzen den Rest.",
+    },
+    reportType: {
+      date: "Datum",
+      location: "Ort",
+      organizer: "Veranstalter",
+      officialWebsite: "Offizielle Website",
+      categories: "Kategorien",
+      description: "Beschreibung",
+      status: "Status",
+      duplicate: "Duplikat",
+      other: "Sonstiges",
+    },
+    form: {
+      reportType: "Art des Problems",
+      message: "Nachricht",
+      messagePlaceholder: "Beschreibe, was geprüft werden soll",
+      correctedValue: "Richtiger oder vorgeschlagener Wert",
+      contactEmail: "Kontakt-E-Mail",
+      fairName: "Messe-Name",
+      city: "Stadt / Ort",
+      country: "Land",
+      startDate: "Startdatum",
+      endDate: "Enddatum",
+      dateText: "Datum oder Zeitraum als Text",
+      venue: "Veranstaltungsort",
+      officialWebsite: "Offizielle Website",
+      organizer: "Veranstalter",
+      sourceUrl: "Quelle / Link",
+      note: "Kommentar",
+      submit: "Meldung senden",
+      cancel: "Abbrechen",
+      close: "Schliessen",
+      optional: "optional",
+      requiredHint: "Bitte gib Messe-Name und Stadt ein.",
+      invalidEmail: "Bitte gib eine gültige E-Mail-Adresse ein oder lass das Feld leer.",
+      invalidUrl: "Bitte gib eine gültige http- oder https-URL ein oder lass das Feld leer.",
+    },
+    result: {
+      successTitle: "Meldung gesendet",
+      successText: "Danke. Wir prüfen die Information, bevor etwas geändert wird.",
+      errorTitle: "Meldung konnte nicht gesendet werden",
+      errorText: "Bitte versuche es gleich noch einmal.",
+    },
+  },
+  ja: {
+    disclaimer: {
+      title: "展示会情報に関する注意",
+      text: "展示会情報は公開情報と公式情報をもとにまとめられています。慎重に確認していますが、内容が不完全または誤っている場合があります。重要な判断は公式展示会ウェブサイトでも確認してください。",
+    },
+    existing: {
+      action: "データの誤りを報告",
+      title: "データの誤りを報告",
+      intro: "確認してほしい内容をお知らせください。展示会データは確認後にのみ変更されます。",
+    },
+    missing: {
+      action: "不足している展示会を報告",
+      title: "不足している展示会を報告",
+      intro: "まだ掲載されていない展示会について、分かる範囲で送信してください。",
+      helper: "分かる範囲で入力してください。内容を確認し、残りを補足します。",
+    },
+    reportType: {
+      date: "日程",
+      location: "場所",
+      organizer: "主催者",
+      officialWebsite: "公式ウェブサイト",
+      categories: "カテゴリー",
+      description: "説明",
+      status: "ステータス",
+      duplicate: "重複",
+      other: "その他",
+    },
+    form: {
+      reportType: "問題の種類",
+      message: "メッセージ",
+      messagePlaceholder: "確認してほしい内容を説明してください",
+      correctedValue: "正しい値または提案値",
+      contactEmail: "連絡先メール",
+      fairName: "展示会名",
+      city: "都市または場所",
+      country: "国",
+      startDate: "開始日",
+      endDate: "終了日",
+      dateText: "日付または期間のメモ",
+      venue: "会場",
+      officialWebsite: "公式ウェブサイト",
+      organizer: "主催者",
+      sourceUrl: "情報源リンク",
+      note: "コメント",
+      submit: "報告を送信",
+      cancel: "キャンセル",
+      close: "閉じる",
+      optional: "任意",
+      requiredHint: "展示会名と都市を入力してください。",
+      invalidEmail: "有効なメールアドレスを入力するか、空欄にしてください。",
+      invalidUrl: "有効な http または https のURLを入力するか、空欄にしてください。",
+    },
+    result: {
+      successTitle: "報告を送信しました",
+      successText: "ありがとうございます。変更を行う前に情報を確認します。",
+      errorTitle: "報告を送信できませんでした",
+      errorText: "しばらくしてからもう一度お試しください。",
+    },
+  },
+  es: {
+    disclaimer: {
+      title: "Aviso sobre la información de ferias",
+      text: "La información de ferias se recopila a partir de fuentes públicas y oficiales. Aunque la revisamos con cuidado, los datos pueden estar incompletos o ser incorrectos. Comprueba también las decisiones importantes en el sitio web oficial de la feria.",
+    },
+    existing: {
+      action: "Informar error de datos",
+      title: "Informar un error de datos",
+      intro: "Cuéntanos qué debemos revisar. Revisamos los informes antes de cambiar datos de ferias.",
+    },
+    missing: {
+      action: "Informar feria faltante",
+      title: "Informar una feria faltante",
+      intro: "Envía algunos datos de una feria que aún no aparece en la lista.",
+      helper: "Indica lo que sepas. Lo revisaremos y añadiremos el resto.",
+    },
+    reportType: {
+      date: "Fecha",
+      location: "Lugar",
+      organizer: "Organizador",
+      officialWebsite: "Sitio web oficial",
+      categories: "Categorías",
+      description: "Descripción",
+      status: "Estado",
+      duplicate: "Duplicado",
+      other: "Otro",
+    },
+    form: {
+      reportType: "Tipo de problema",
+      message: "Mensaje",
+      messagePlaceholder: "Describe qué debemos revisar",
+      correctedValue: "Valor correcto o sugerido",
+      contactEmail: "Email de contacto",
+      fairName: "Nombre de la feria",
+      city: "Ciudad o lugar",
+      country: "País",
+      startDate: "Fecha de inicio",
+      endDate: "Fecha de finalización",
+      dateText: "Fecha o periodo como texto",
+      venue: "Recinto",
+      officialWebsite: "Sitio web oficial",
+      organizer: "Organizador",
+      sourceUrl: "Enlace de fuente",
+      note: "Comentario",
+      submit: "Enviar informe",
+      cancel: "Cancelar",
+      close: "Cerrar",
+      optional: "opcional",
+      requiredHint: "Introduce el nombre de la feria y la ciudad.",
+      invalidEmail: "Introduce un email válido o deja el campo vacío.",
+      invalidUrl: "Introduce una URL http o https válida, o deja el campo vacío.",
+    },
+    result: {
+      successTitle: "Informe enviado",
+      successText: "Gracias. Revisaremos la información antes de hacer cambios.",
+      errorTitle: "No se pudo enviar el informe",
+      errorText: "Inténtalo de nuevo en un momento.",
+    },
+  },
+  fr: {
+    disclaimer: {
+      title: "Remarque sur les informations des salons",
+      text: "Les informations sur les salons sont compilées à partir de sources publiques et officielles. Malgré une vérification attentive, les données peuvent être incomplètes ou incorrectes. Vérifie aussi les décisions importantes sur le site officiel du salon.",
+    },
+    existing: {
+      action: "Signaler une erreur de données",
+      title: "Signaler une erreur de données",
+      intro: "Dis-nous ce qui doit être vérifié. Nous examinons les signalements avant toute modification.",
+    },
+    missing: {
+      action: "Signaler un salon manquant",
+      title: "Signaler un salon manquant",
+      intro: "Envoie quelques informations sur un salon qui n’est pas encore listé.",
+      helper: "Indique ce que tu sais. Nous vérifierons et compléterons le reste.",
+    },
+    reportType: {
+      date: "Date",
+      location: "Lieu",
+      organizer: "Organisateur",
+      officialWebsite: "Site officiel",
+      categories: "Catégories",
+      description: "Description",
+      status: "Statut",
+      duplicate: "Doublon",
+      other: "Autre",
+    },
+    form: {
+      reportType: "Type de problème",
+      message: "Message",
+      messagePlaceholder: "Décris ce qui doit être vérifié",
+      correctedValue: "Valeur correcte ou suggérée",
+      contactEmail: "Email de contact",
+      fairName: "Nom du salon",
+      city: "Ville ou lieu",
+      country: "Pays",
+      startDate: "Date de début",
+      endDate: "Date de fin",
+      dateText: "Date ou période en texte",
+      venue: "Lieu",
+      officialWebsite: "Site officiel",
+      organizer: "Organisateur",
+      sourceUrl: "Lien source",
+      note: "Commentaire",
+      submit: "Envoyer le signalement",
+      cancel: "Annuler",
+      close: "Fermer",
+      optional: "facultatif",
+      requiredHint: "Indique le nom du salon et la ville.",
+      invalidEmail: "Indique une adresse email valide ou laisse le champ vide.",
+      invalidUrl: "Indique une URL http ou https valide, ou laisse le champ vide.",
+    },
+    result: {
+      successTitle: "Signalement envoyé",
+      successText: "Merci. Nous vérifierons l’information avant toute modification.",
+      errorTitle: "Le signalement n’a pas pu être envoyé",
+      errorText: "Réessaie dans un instant.",
+    },
+  },
+  it: {
+    disclaimer: {
+      title: "Avviso sulle informazioni fieristiche",
+      text: "Le informazioni sulle fiere sono raccolte da fonti pubbliche e ufficiali. Nonostante controlli accurati, i dati possono essere incompleti o errati. Verifica anche le decisioni importanti sul sito ufficiale della fiera.",
+    },
+    existing: {
+      action: "Segnala errore dati",
+      title: "Segnala un errore dati",
+      intro: "Indicaci cosa deve essere verificato. Esaminiamo le segnalazioni prima di modificare i dati.",
+    },
+    missing: {
+      action: "Segnala fiera mancante",
+      title: "Segnala una fiera mancante",
+      intro: "Invia alcuni dati su una fiera non ancora presente nell’elenco.",
+      helper: "Inserisci ciò che sai. Verificheremo e aggiungeremo il resto.",
+    },
+    reportType: {
+      date: "Data",
+      location: "Luogo",
+      organizer: "Organizzatore",
+      officialWebsite: "Sito ufficiale",
+      categories: "Categorie",
+      description: "Descrizione",
+      status: "Stato",
+      duplicate: "Duplicato",
+      other: "Altro",
+    },
+    form: {
+      reportType: "Tipo di problema",
+      message: "Messaggio",
+      messagePlaceholder: "Descrivi cosa deve essere verificato",
+      correctedValue: "Valore corretto o suggerito",
+      contactEmail: "Email di contatto",
+      fairName: "Nome della fiera",
+      city: "Città o luogo",
+      country: "Paese",
+      startDate: "Data di inizio",
+      endDate: "Data di fine",
+      dateText: "Data o periodo come testo",
+      venue: "Sede",
+      officialWebsite: "Sito ufficiale",
+      organizer: "Organizzatore",
+      sourceUrl: "Link fonte",
+      note: "Commento",
+      submit: "Invia segnalazione",
+      cancel: "Annulla",
+      close: "Chiudi",
+      optional: "facoltativo",
+      requiredHint: "Inserisci il nome della fiera e la città.",
+      invalidEmail: "Inserisci un indirizzo email valido o lascia il campo vuoto.",
+      invalidUrl: "Inserisci un URL http o https valido, oppure lascia il campo vuoto.",
+    },
+    result: {
+      successTitle: "Segnalazione inviata",
+      successText: "Grazie. Verificheremo le informazioni prima di apportare modifiche.",
+      errorTitle: "Non è stato possibile inviare la segnalazione",
+      errorText: "Riprova tra poco.",
+    },
+  },
+  bs: {
+    disclaimer: {
+      title: "Napomena o informacijama o sajmovima",
+      text: "Informacije o sajmovima sastavljaju se iz javnih i službenih izvora. Uprkos pažljivoj provjeri, podaci mogu biti nepotpuni ili netačni. Važne odluke dodatno provjeri na službenoj web stranici sajma.",
+    },
+    existing: {
+      action: "Prijavi grešku u podacima",
+      title: "Prijavi grešku u podacima",
+      intro: "Reci nam šta treba provjeriti. Prijave pregledamo prije bilo kakvih izmjena podataka.",
+    },
+    missing: {
+      action: "Prijavi nedostajući sajam",
+      title: "Prijavi nedostajući sajam",
+      intro: "Pošalji nekoliko podataka o sajmu koji još nije na listi.",
+      helper: "Unesi ono što znaš. Provjerit ćemo i dopuniti ostatak.",
+    },
+    reportType: {
+      date: "Datum",
+      location: "Lokacija",
+      organizer: "Organizator",
+      officialWebsite: "Službena web stranica",
+      categories: "Kategorije",
+      description: "Opis",
+      status: "Status",
+      duplicate: "Duplikat",
+      other: "Ostalo",
+    },
+    form: {
+      reportType: "Vrsta problema",
+      message: "Poruka",
+      messagePlaceholder: "Opiši šta treba provjeriti",
+      correctedValue: "Ispravna ili predložena vrijednost",
+      contactEmail: "Kontakt email",
+      fairName: "Naziv sajma",
+      city: "Grad ili mjesto",
+      country: "Država",
+      startDate: "Datum početka",
+      endDate: "Datum završetka",
+      dateText: "Datum ili period kao tekst",
+      venue: "Mjesto održavanja",
+      officialWebsite: "Službena web stranica",
+      organizer: "Organizator",
+      sourceUrl: "Link izvora",
+      note: "Komentar",
+      submit: "Pošalji prijavu",
+      cancel: "Otkaži",
+      close: "Zatvori",
+      optional: "opciono",
+      requiredHint: "Unesi naziv sajma i grad.",
+      invalidEmail: "Unesi ispravnu email adresu ili ostavi polje prazno.",
+      invalidUrl: "Unesi ispravan http ili https URL, ili ostavi polje prazno.",
+    },
+    result: {
+      successTitle: "Prijava poslana",
+      successText: "Hvala. Provjerit ćemo informacije prije bilo kakvih izmjena.",
+      errorTitle: "Prijava nije mogla biti poslana",
+      errorText: "Pokušaj ponovo za trenutak.",
+    },
+  },
+  hr: {
+    disclaimer: {
+      title: "Napomena o informacijama o sajmovima",
+      text: "Informacije o sajmovima sastavljaju se iz javnih i službenih izvora. Unatoč pažljivoj provjeri, podaci mogu biti nepotpuni ili netočni. Važne odluke dodatno provjeri na službenoj web-stranici sajma.",
+    },
+    existing: {
+      action: "Prijavi pogrešku u podacima",
+      title: "Prijavi pogrešku u podacima",
+      intro: "Reci nam što treba provjeriti. Prijave pregledavamo prije bilo kakvih izmjena podataka.",
+    },
+    missing: {
+      action: "Prijavi nedostajući sajam",
+      title: "Prijavi nedostajući sajam",
+      intro: "Pošalji nekoliko podataka o sajmu koji još nije na popisu.",
+      helper: "Unesi ono što znaš. Provjerit ćemo i dopuniti ostatak.",
+    },
+    reportType: {
+      date: "Datum",
+      location: "Lokacija",
+      organizer: "Organizator",
+      officialWebsite: "Službena web-stranica",
+      categories: "Kategorije",
+      description: "Opis",
+      status: "Status",
+      duplicate: "Duplikat",
+      other: "Ostalo",
+    },
+    form: {
+      reportType: "Vrsta problema",
+      message: "Poruka",
+      messagePlaceholder: "Opiši što treba provjeriti",
+      correctedValue: "Ispravna ili predložena vrijednost",
+      contactEmail: "Kontakt email",
+      fairName: "Naziv sajma",
+      city: "Grad ili mjesto",
+      country: "Država",
+      startDate: "Datum početka",
+      endDate: "Datum završetka",
+      dateText: "Datum ili razdoblje kao tekst",
+      venue: "Mjesto održavanja",
+      officialWebsite: "Službena web-stranica",
+      organizer: "Organizator",
+      sourceUrl: "Poveznica izvora",
+      note: "Komentar",
+      submit: "Pošalji prijavu",
+      cancel: "Odustani",
+      close: "Zatvori",
+      optional: "neobavezno",
+      requiredHint: "Unesi naziv sajma i grad.",
+      invalidEmail: "Unesi ispravnu email adresu ili ostavi polje prazno.",
+      invalidUrl: "Unesi ispravan http ili https URL, ili ostavi polje prazno.",
+    },
+    result: {
+      successTitle: "Prijava poslana",
+      successText: "Hvala. Provjerit ćemo informacije prije bilo kakvih izmjena.",
+      errorTitle: "Prijavu nije bilo moguće poslati",
+      errorText: "Pokušaj ponovno za trenutak.",
+    },
+  },
+  hi: {
+    disclaimer: {
+      title: "व्यापार मेले की जानकारी के बारे में सूचना",
+      text: "मेले की जानकारी सार्वजनिक और आधिकारिक स्रोतों से तैयार की जाती है। सावधानीपूर्वक जाँच के बावजूद जानकारी अधूरी या गलत हो सकती है। महत्वपूर्ण निर्णयों के लिए आधिकारिक मेले की वेबसाइट पर भी जाँच करें।",
+    },
+    existing: {
+      action: "डेटा त्रुटि रिपोर्ट करें",
+      title: "डेटा त्रुटि रिपोर्ट करें",
+      intro: "बताएँ कि क्या जाँचना चाहिए। किसी भी डेटा बदलाव से पहले हम रिपोर्ट की समीक्षा करते हैं।",
+    },
+    missing: {
+      action: "छूटा हुआ व्यापार मेला रिपोर्ट करें",
+      title: "छूटा हुआ व्यापार मेला रिपोर्ट करें",
+      intro: "ऐसे मेले की कुछ जानकारी भेजें जो अभी सूची में नहीं है।",
+      helper: "जो जानकारी आपको पता है वह दर्ज करें। हम जाँचेंगे और बाकी जोड़ेंगे।",
+    },
+    reportType: {
+      date: "तारीख",
+      location: "स्थान",
+      organizer: "आयोजक",
+      officialWebsite: "आधिकारिक वेबसाइट",
+      categories: "श्रेणियां",
+      description: "विवरण",
+      status: "स्थिति",
+      duplicate: "डुप्लिकेट",
+      other: "अन्य",
+    },
+    form: {
+      reportType: "समस्या का प्रकार",
+      message: "संदेश",
+      messagePlaceholder: "बताएँ कि क्या जाँचना चाहिए",
+      correctedValue: "सही या सुझाया गया मान",
+      contactEmail: "संपर्क ईमेल",
+      fairName: "व्यापार मेले का नाम",
+      city: "शहर या स्थान",
+      country: "देश",
+      startDate: "आरंभ तिथि",
+      endDate: "समाप्ति तिथि",
+      dateText: "तारीख या अवधि टेक्स्ट में",
+      venue: "स्थान",
+      officialWebsite: "आधिकारिक वेबसाइट",
+      organizer: "आयोजक",
+      sourceUrl: "स्रोत लिंक",
+      note: "टिप्पणी",
+      submit: "रिपोर्ट भेजें",
+      cancel: "रद्द करें",
+      close: "बंद करें",
+      optional: "वैकल्पिक",
+      requiredHint: "कृपया मेले का नाम और शहर दर्ज करें।",
+      invalidEmail: "कृपया मान्य ईमेल पता दर्ज करें या फ़ील्ड खाली छोड़ दें।",
+      invalidUrl: "कृपया मान्य http या https URL दर्ज करें, या फ़ील्ड खाली छोड़ दें।",
+    },
+    result: {
+      successTitle: "रिपोर्ट भेज दी गई",
+      successText: "धन्यवाद। बदलाव करने से पहले हम जानकारी की जाँच करेंगे।",
+      errorTitle: "रिपोर्ट भेजी नहीं जा सकी",
+      errorText: "कृपया थोड़ी देर बाद फिर से प्रयास करें।",
+    },
+  },
+};
+
 export function getFairCopy(locale: string): FairPageCopy {
   return fairCopyByLocale[
+    isSupportedWebsiteLocale(locale) ? locale : defaultWebsiteLocaleCode
+  ];
+}
+
+export function getFairDataReportCopy(locale: string): FairDataReportCopy {
+  return fairDataReportCopyByLocale[
     isSupportedWebsiteLocale(locale) ? locale : defaultWebsiteLocaleCode
   ];
 }

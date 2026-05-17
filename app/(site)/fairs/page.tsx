@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { getPublicFairCategories, getPublishedFairs } from "@/lib/fairs";
 import FairsListClient from "@/components/website/FairsListClient";
-import { getFairCopy } from "@/lib/website/fairCopy";
+import { getFairCopy, getFairDataReportCopy } from "@/lib/website/fairCopy";
 
 export const dynamic = "force-dynamic";
 
 const copy = getFairCopy("en");
+const reportCopy = getFairDataReportCopy("en");
 
 export const metadata: Metadata = {
   title: copy.title,
@@ -44,23 +45,13 @@ export default async function FairsPage() {
       </div>
 
       <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-sm backdrop-blur-xl sm:p-8">
-        {fairs.length === 0 ? (
-          <div>
-            <h2 className="text-2xl font-semibold text-slate-950">
-              {copy.emptyTitle}
-            </h2>
-            <p className="mt-2 leading-7 text-slate-700">
-              {copy.emptyText}
-            </p>
-          </div>
-        ) : (
-          <FairsListClient
-            fairs={fairs}
-            categories={categories}
-            locale="en"
-            copy={copy}
-          />
-        )}
+        <FairsListClient
+          fairs={fairs}
+          categories={categories}
+          locale="en"
+          copy={copy}
+          reportCopy={reportCopy}
+        />
       </div>
     </section>
   );
