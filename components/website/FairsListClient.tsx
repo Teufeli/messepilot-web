@@ -889,16 +889,6 @@ export default function FairsListClient({
                           {copy.details}
                         </Link>
 
-                        {fair.officialWebsite ? (
-                          <a
-                            href={fair.officialWebsite}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
-                          >
-                            {copy.officialWebsite}
-                          </a>
-                        ) : null}
                       </div>
                     </div>
 
