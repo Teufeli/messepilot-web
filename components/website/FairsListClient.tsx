@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   FairBadgeStrip,
@@ -581,7 +581,6 @@ export default function FairsListClient({
   reportCopy,
   initialLocationKey,
 }: FairsListClientProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const [sortOrder, setSortOrder] = useState<SortOrder>("soonest");
   const [hidePastFairs, setHidePastFairs] = useState(true);
@@ -670,15 +669,8 @@ export default function FairsListClient({
   const fairDetailPath = (fairId: string) =>
     locale === "en" ? `/fairs/${fairId}` : `/${locale}/fairs/${fairId}`;
 
-  const clearLocationFilter = () => {
+  const clearLocationFilterState = () => {
     setSelectedLocationKey(null);
-
-    const params = new URLSearchParams(window.location.search);
-    params.delete("location");
-    const nextSearch = params.toString();
-    router.replace(nextSearch ? `${pathname}?${nextSearch}` : pathname, {
-      scroll: false,
-    });
   };
 
   const toggleCategory = (categoryId: string) => {
@@ -700,9 +692,7 @@ export default function FairsListClient({
   const resetFilters = () => {
     setSearchQuery("");
     setSelectedCategoryIds([]);
-    if (selectedLocationKey) {
-      clearLocationFilter();
-    }
+    setSelectedLocationKey(null);
     setHidePastFairs(true);
   };
 
@@ -757,7 +747,16 @@ export default function FairsListClient({
               </button>
             </div>
 
-            {hasChangedFilters ? (
+            {hasChangedFilters && selectedLocationKey ? (
+              <Link
+                href={pathname}
+                scroll={false}
+                onClick={resetFilters}
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-100"
+              >
+                {copy.resetFilters}
+              </Link>
+            ) : hasChangedFilters ? (
               <button
                 type="button"
                 onClick={resetFilters}
@@ -774,16 +773,17 @@ export default function FairsListClient({
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               {copy.locationFilter}
             </p>
-            <button
-              type="button"
-              onClick={clearLocationFilter}
+            <Link
+              href={pathname}
+              scroll={false}
+              onClick={clearLocationFilterState}
               className="inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
             >
               <span className="truncate">
                 {copy.locationFilter}: {selectedLocationLabel ?? selectedLocationKey}
               </span>
               <span aria-hidden="true">x</span>
-            </button>
+            </Link>
           </div>
         ) : null}
 

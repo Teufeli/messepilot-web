@@ -26,6 +26,19 @@ type WorldAtlasTopology = Topology<{
   countries: GeometryCollection;
 }>;
 
+type MarkerHorizontalPlacement = "left" | "center" | "right";
+type MarkerVerticalPlacement = "above" | "below";
+
+type ProjectedLocation = {
+  x: number;
+  y: number;
+  leftPercent: number;
+  topPercent: number;
+  labelSide: Exclude<MarkerHorizontalPlacement, "center">;
+  previewX: MarkerHorizontalPlacement;
+  previewY: MarkerVerticalPlacement;
+};
+
 const width = 960;
 const height = 520;
 const worldAtlas = countries110m as unknown as WorldAtlasTopology;
@@ -36,8 +49,9 @@ const countries = feature(
 const projection = geoEqualEarth().fitSize([width, height], { type: "Sphere" });
 const path = geoPath(projection);
 const countryFeatures = countries.features;
+const persistentLabelLimit = 8;
 
-function projectedLocation(group: FairLocationGroup) {
+function projectedLocation(group: FairLocationGroup): ProjectedLocation | null {
   const projected = projection([
     group.coordinates.longitude,
     group.coordinates.latitude,
@@ -51,13 +65,52 @@ function projectedLocation(group: FairLocationGroup) {
   return {
     x,
     y,
-    previewX: Math.min(Math.max(x, 150), width - 150),
-    previewY: Math.min(Math.max(y - 18, 110), height - 130),
+    leftPercent: (x / width) * 100,
+    topPercent: (y / height) * 100,
+    labelSide: x > width * 0.68 ? "left" : "right",
+    previewX: x < width * 0.32 ? "left" : x > width * 0.68 ? "right" : "center",
+    previewY: y < height * 0.42 ? "below" : "above",
   };
 }
 
 function countLabel(count: number, copy: HomeLocationMapCopy) {
   return `${count} ${count === 1 ? copy.fairSingular : copy.fairPlural}`;
+}
+
+function persistentLabelKeys(groups: FairLocationGroup[]) {
+  return new Set(
+    [...groups]
+      .sort(
+        (a, b) =>
+          b.fairs.length - a.fairs.length ||
+          a.label.localeCompare(b.label) ||
+          a.key.localeCompare(b.key),
+      )
+      .slice(0, persistentLabelLimit)
+      .map((group) => group.key),
+  );
+}
+
+function labelPlacementClass(side: ProjectedLocation["labelSide"]) {
+  return side === "left"
+    ? "right-full mr-3 origin-right"
+    : "left-full ml-3 origin-left";
+}
+
+function previewPlacementClass(
+  horizontal: MarkerHorizontalPlacement,
+  vertical: MarkerVerticalPlacement,
+) {
+  const verticalClass =
+    vertical === "above" ? "bottom-full mb-4" : "top-full mt-4";
+  const horizontalClass =
+    horizontal === "left"
+      ? "left-0"
+      : horizontal === "right"
+      ? "right-0"
+      : "left-1/2 -translate-x-1/2";
+
+  return `${verticalClass} ${horizontalClass}`;
 }
 
 function PreviewCard({
@@ -73,7 +126,7 @@ function PreviewCard({
   const detail = firstFair ? localizedFairLocationDetail(firstFair, locale) : null;
 
   return (
-    <div className="pointer-events-none w-72 max-w-[calc(100vw-3rem)] rounded-2xl border border-slate-200 bg-white/95 p-4 text-left shadow-xl shadow-slate-900/15 backdrop-blur">
+    <div className="w-72 max-w-[calc(100vw-3rem)] cursor-pointer rounded-2xl border border-slate-200 bg-white/95 p-4 text-left shadow-xl shadow-slate-900/15 backdrop-blur">
       <div className="space-y-1">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
           {countLabel(group.fairs.length, copy)}
@@ -119,10 +172,8 @@ export function HomeFairLocationMap({
     () => buildFairLocationGroups(fairs, locale),
     [fairs, locale],
   );
+  const persistentLabels = useMemo(() => persistentLabelKeys(groups), [groups]);
   const [activeLocationKey, setActiveLocationKey] = useState<string | null>(null);
-  const activeGroup =
-    groups.find((group) => group.key === activeLocationKey) ?? null;
-  const activePosition = activeGroup ? projectedLocation(activeGroup) : null;
 
   return (
     <section className="space-y-5">
@@ -138,25 +189,29 @@ export function HomeFairLocationMap({
 
       {groups.length > 0 ? (
         <>
-          <div className="relative overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-sm backdrop-blur-xl">
-            <svg
-              role="img"
-              aria-label={copy.title}
-              viewBox={`0 0 ${width} ${height}`}
-              className="aspect-[1.85/1] w-full bg-[radial-gradient(circle_at_30%_15%,rgba(14,165,233,0.16),transparent_30%),linear-gradient(180deg,#f8fafc_0%,#e2e8f0_100%)]"
-            >
-              <rect width={width} height={height} fill="transparent" />
-              <g>
-                {countryFeatures.map((country: Feature<Geometry>, index) => (
-                  <path
-                    key={country.id ?? index}
-                    d={path(country) ?? undefined}
-                    className="fill-white/80 stroke-slate-300/70"
-                    strokeWidth={0.7}
-                  />
-                ))}
-              </g>
+          <div className="relative aspect-[1.85/1] overflow-visible">
+            <div className="absolute inset-0 overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-sm backdrop-blur-xl">
+              <svg
+                role="img"
+                aria-label={copy.title}
+                viewBox={`0 0 ${width} ${height}`}
+                className="h-full w-full bg-[radial-gradient(circle_at_30%_15%,rgba(14,165,233,0.16),transparent_30%),linear-gradient(180deg,#f8fafc_0%,#e2e8f0_100%)]"
+              >
+                <rect width={width} height={height} fill="transparent" />
+                <g>
+                  {countryFeatures.map((country: Feature<Geometry>, index) => (
+                    <path
+                      key={country.id ?? index}
+                      d={path(country) ?? undefined}
+                      className="fill-white/80 stroke-slate-300/70"
+                      strokeWidth={0.7}
+                    />
+                  ))}
+                </g>
+              </svg>
+            </div>
 
+            <div className="pointer-events-none absolute inset-0 z-10">
               {groups.map((group) => {
                 const projected = projectedLocation(group);
                 if (!projected) {
@@ -164,6 +219,7 @@ export function HomeFairLocationMap({
                 }
 
                 const isActive = group.key === activeLocationKey;
+                const showLabel = isActive || persistentLabels.has(group.key);
                 const href = fairsLocationHref(locale, group.key);
 
                 return (
@@ -175,46 +231,55 @@ export function HomeFairLocationMap({
                     onMouseLeave={() => setActiveLocationKey(null)}
                     onFocus={() => setActiveLocationKey(group.key)}
                     onBlur={() => setActiveLocationKey(null)}
-                    className="group outline-none"
+                    className={[
+                      "group pointer-events-auto absolute flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full outline-none transition focus-visible:ring-4 focus-visible:ring-blue-500/30",
+                      isActive ? "z-30" : "z-10",
+                    ].join(" ")}
+                    style={{
+                      left: `${projected.leftPercent}%`,
+                      top: `${projected.topPercent}%`,
+                    }}
                   >
-                    <circle
-                      cx={projected.x}
-                      cy={projected.y}
-                      r={isActive ? 15 : 12}
-                      className="fill-blue-500/15 stroke-blue-700/50 transition-all group-hover:fill-blue-500/25 group-focus:fill-blue-500/25"
-                      strokeWidth={2}
+                    <span
+                      aria-hidden="true"
+                      className={[
+                        "absolute h-8 w-8 rounded-full border-2 border-blue-700/45 bg-blue-500/15 transition",
+                        isActive
+                          ? "scale-125 bg-blue-500/25"
+                          : "group-hover:scale-125 group-hover:bg-blue-500/25 group-focus:scale-125 group-focus:bg-blue-500/25",
+                      ].join(" ")}
                     />
-                    <circle
-                      cx={projected.x}
-                      cy={projected.y}
-                      r={5}
-                      className="fill-slate-950 stroke-white transition group-hover:fill-blue-700 group-focus:fill-blue-700"
-                      strokeWidth={2.5}
+                    <span
+                      aria-hidden="true"
+                      className="relative h-3.5 w-3.5 rounded-full border-[3px] border-white bg-slate-950 shadow-md shadow-slate-900/30 transition group-hover:bg-blue-700 group-focus:bg-blue-700"
                     />
-                    <text
-                      x={projected.x + 12}
-                      y={projected.y - 10}
-                      className="hidden fill-slate-950 text-[13px] font-semibold drop-shadow-sm md:block"
+
+                    <span
+                      className={[
+                        "absolute top-1/2 hidden max-w-40 -translate-y-1/2 whitespace-nowrap rounded-full border border-slate-200 bg-white/95 px-3 py-1.5 text-sm font-semibold leading-none text-slate-950 shadow-lg shadow-slate-900/10 backdrop-blur transition md:block",
+                        labelPlacementClass(projected.labelSide),
+                        showLabel
+                          ? "scale-100 opacity-100"
+                          : "pointer-events-none scale-95 opacity-0 group-hover:scale-100 group-hover:opacity-100 group-focus:scale-100 group-focus:opacity-100",
+                      ].join(" ")}
                     >
-                      {group.label}
-                    </text>
+                      <span className="block truncate">{group.label}</span>
+                    </span>
+
+                    {isActive ? (
+                      <div
+                        className={[
+                          "absolute z-30 hidden md:block",
+                          previewPlacementClass(projected.previewX, projected.previewY),
+                        ].join(" ")}
+                      >
+                        <PreviewCard group={group} locale={locale} copy={copy} />
+                      </div>
+                    ) : null}
                   </a>
                 );
               })}
-            </svg>
-
-            {activeGroup && activePosition ? (
-              <div
-                className="absolute z-10 hidden md:block"
-                style={{
-                  left: `${(activePosition.previewX / width) * 100}%`,
-                  top: `${(activePosition.previewY / height) * 100}%`,
-                  transform: "translate(-50%, -100%)",
-                }}
-              >
-                <PreviewCard group={activeGroup} locale={locale} copy={copy} />
-              </div>
-            ) : null}
+            </div>
           </div>
 
           <div className="space-y-3 md:hidden">
