@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { geoEqualEarth, geoPath } from "d3-geo";
+import { geoContains, geoEqualEarth, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { GeometryCollection, Topology } from "topojson-specification";
@@ -50,6 +50,38 @@ const projection = geoEqualEarth().fitSize([width, height], { type: "Sphere" });
 const path = geoPath(projection);
 const countryFeatures = countries.features;
 const persistentLabelLimit = 8;
+const countryIsoNumericIds: Record<string, string> = {
+  AE: "784",
+  AT: "040",
+  AU: "036",
+  BE: "056",
+  BR: "076",
+  CA: "124",
+  CH: "756",
+  CN: "156",
+  DE: "276",
+  DK: "208",
+  ES: "724",
+  FI: "246",
+  FR: "250",
+  GB: "826",
+  HK: "344",
+  ID: "360",
+  IN: "356",
+  IT: "380",
+  JP: "392",
+  KR: "410",
+  MX: "484",
+  NL: "528",
+  NO: "578",
+  PL: "616",
+  SE: "752",
+  SG: "702",
+  TH: "764",
+  TR: "792",
+  US: "840",
+  ZA: "710",
+};
 
 function projectedLocation(group: FairLocationGroup): ProjectedLocation | null {
   const projected = projection([
@@ -75,6 +107,35 @@ function projectedLocation(group: FairLocationGroup): ProjectedLocation | null {
 
 function countLabel(count: number, copy: HomeLocationMapCopy) {
   return `${count} ${count === 1 ? copy.fairSingular : copy.fairPlural}`;
+}
+
+function worldAtlasCountryId(country: Feature<Geometry>) {
+  return country.id?.toString().padStart(3, "0") ?? null;
+}
+
+function countryIsoNumericId(countryISO: string) {
+  return countryIsoNumericIds[countryISO.trim().toUpperCase()] ?? null;
+}
+
+function containingCountryId(group: FairLocationGroup) {
+  const coordinates: [number, number] = [
+    group.coordinates.longitude,
+    group.coordinates.latitude,
+  ];
+  const country = countryFeatures.find((feature) => geoContains(feature, coordinates));
+
+  return country ? worldAtlasCountryId(country) : null;
+}
+
+function activeCountryIds(groups: FairLocationGroup[]) {
+  return new Set(
+    groups
+      .map(
+        (group) =>
+          countryIsoNumericId(group.countryISO) ?? containingCountryId(group),
+      )
+      .filter((id): id is string => Boolean(id)),
+  );
 }
 
 function persistentLabelKeys(groups: FairLocationGroup[]) {
@@ -172,6 +233,7 @@ export function HomeFairLocationMap({
     () => buildFairLocationGroups(fairs, locale),
     [fairs, locale],
   );
+  const highlightedCountries = useMemo(() => activeCountryIds(groups), [groups]);
   const persistentLabels = useMemo(() => persistentLabelKeys(groups), [groups]);
   const [activeLocationKey, setActiveLocationKey] = useState<string | null>(null);
 
@@ -199,14 +261,25 @@ export function HomeFairLocationMap({
               >
                 <rect width={width} height={height} fill="transparent" />
                 <g>
-                  {countryFeatures.map((country: Feature<Geometry>, index) => (
-                    <path
-                      key={country.id ?? index}
-                      d={path(country) ?? undefined}
-                      className="fill-white/80 stroke-slate-300/70"
-                      strokeWidth={0.7}
-                    />
-                  ))}
+                  {countryFeatures.map((country: Feature<Geometry>, index) => {
+                    const countryId = worldAtlasCountryId(country);
+                    const isHighlighted = highlightedCountries.has(countryId ?? "");
+
+                    return (
+                      <path
+                        key={country.id ?? index}
+                        data-country-active={isHighlighted ? "true" : undefined}
+                        data-country-id={countryId ?? undefined}
+                        d={path(country) ?? undefined}
+                        className={
+                          isHighlighted
+                            ? "fill-blue-100/80 stroke-blue-300/80"
+                            : "fill-white/80 stroke-slate-300/70"
+                        }
+                        strokeWidth={isHighlighted ? 0.9 : 0.7}
+                      />
+                    );
+                  })}
                 </g>
               </svg>
             </div>
