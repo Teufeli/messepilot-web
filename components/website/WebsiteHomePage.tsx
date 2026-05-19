@@ -1,12 +1,16 @@
 import Link from "next/link";
 
+import { HomeFairLocationMap } from "@/components/website/HomeFairLocationMap";
+import type { WebsiteFair } from "@/lib/fairs";
 import type { HomeContent } from "@/lib/website/homeContent";
+import { getHomeLocationMapCopy } from "@/lib/website/homeLocationMapCopy";
 
 type WebsiteHomePageProps = {
   content: HomeContent;
+  fairs: WebsiteFair[];
 };
 
-export function WebsiteHomePage({ content }: WebsiteHomePageProps) {
+export function WebsiteHomePage({ content, fairs }: WebsiteHomePageProps) {
   return (
     <section className="space-y-8">
       <div
@@ -43,6 +47,12 @@ export function WebsiteHomePage({ content }: WebsiteHomePageProps) {
           {content.primaryButtonNote}
         </p>
       </div>
+
+      <HomeFairLocationMap
+        fairs={fairs}
+        locale={content.locale}
+        copy={getHomeLocationMapCopy(content.locale)}
+      />
     </section>
   );
 }

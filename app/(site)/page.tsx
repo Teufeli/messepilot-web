@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 
 import { WebsiteHomePage } from "@/components/website/WebsiteHomePage";
+import { getPublishedFairs } from "@/lib/fairs";
 import { getHomeContent } from "@/lib/website/homeContent";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const content = await getHomeContent("en");
@@ -13,7 +16,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Home() {
-  const content = await getHomeContent("en");
+  const [content, fairs] = await Promise.all([
+    getHomeContent("en"),
+    getPublishedFairs(),
+  ]);
 
-  return <WebsiteHomePage content={content} />;
+  return <WebsiteHomePage content={content} fairs={fairs} />;
 }

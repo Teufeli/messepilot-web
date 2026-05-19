@@ -58,6 +58,7 @@ export type WebsiteFair = {
   name: string;
   city: string;
   countryISO: string;
+  venueName?: string;
   startDate: Date | null;
   endDate: Date | null;
   categoryIds: string[];
@@ -65,6 +66,7 @@ export type WebsiteFair = {
   categories: string[];
   description?: string;
   localizedDescriptions: Record<string, string>;
+  localizedLocationLabels: Record<string, WebsiteFairLocalizedLocationLabels>;
   officialWebsite?: string;
   organizerName?: string;
   updatedAt: Date | null;
@@ -77,6 +79,14 @@ export type WebsiteFair = {
   recentImportantChangeUntil: Date | null;
   changeEvents: WebsiteFairChangeEvent[];
   badges: WebsiteFairBadge[];
+};
+
+export type WebsiteFairLocalizedLocationLabels = {
+  cityDisplayName?: string;
+  city?: string;
+  locationName?: string;
+  countryDisplayName?: string;
+  venueName?: string;
 };
 
 export type WebsiteFairCategory = {
@@ -93,6 +103,7 @@ type FirestoreFairDocument = {
   name?: string;
   city?: string;
   countryISO?: string;
+  venueName?: string;
   startDate?: Timestamp;
   endDate?: Timestamp;
   categoryIds?: string[];
@@ -109,7 +120,14 @@ type FirestoreFairDocument = {
   changeSummary?: string;
   recentImportantChangeUntil?: Timestamp;
   description?: string;
-  localized?: Record<string, { description?: string }>;
+  localized?: Record<string, {
+    city?: string;
+    cityDisplayName?: string;
+    countryDisplayName?: string;
+    description?: string;
+    locationName?: string;
+    venueName?: string;
+  }>;
 };
 
 type FirestoreFairCategoryDocument = {
@@ -234,6 +252,33 @@ function localizedDescriptions(
   );
 }
 
+function localizedLocationLabels(
+  localized: FirestoreFairDocument["localized"],
+): Record<string, WebsiteFairLocalizedLocationLabels> {
+  if (!localized || typeof localized !== "object") {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(localized)
+      .map(([locale, value]) => {
+        const labels: WebsiteFairLocalizedLocationLabels = {
+          cityDisplayName: normalizedText(value?.cityDisplayName),
+          city: normalizedText(value?.city),
+          locationName: normalizedText(value?.locationName),
+          countryDisplayName: normalizedText(value?.countryDisplayName),
+          venueName: normalizedText(value?.venueName),
+        };
+        const hasLabel = Object.values(labels).some(Boolean);
+        return [normalizeLocaleKey(locale), labels, hasLabel] as const;
+      })
+      .filter((entry): entry is [string, WebsiteFairLocalizedLocationLabels, true] =>
+        Boolean(entry[0] && entry[2]),
+      )
+      .map(([locale, labels]) => [locale, labels]),
+  );
+}
+
 function categoryLabelFromLocalizedValue(value: unknown): string | undefined {
   if (typeof value === "string") {
     return normalizedText(value);
@@ -317,6 +362,7 @@ function mapFairDocument(documentId: string, data: FirestoreFairDocument): Websi
     name: data.name ?? "Untitled fair",
     city: data.city ?? "",
     countryISO: data.countryISO ?? "",
+    venueName: normalizedText(data.venueName),
     startDate: toDate(data.startDate),
     endDate: toDate(data.endDate),
     categoryIds,
@@ -330,6 +376,7 @@ function mapFairDocument(documentId: string, data: FirestoreFairDocument): Websi
     categories: categoryIds,
     description: normalizedText(data.description),
     localizedDescriptions: localizedDescriptions(data.localized),
+    localizedLocationLabels: localizedLocationLabels(data.localized),
     officialWebsite: data.officialWebsite,
     organizerName: data.organizerName,
     updatedAt: toDate(data.updatedAt),

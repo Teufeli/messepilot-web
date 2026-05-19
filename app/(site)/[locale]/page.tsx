@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 
 import { WebsiteHomePage } from "@/components/website/WebsiteHomePage";
+import { getPublishedFairs } from "@/lib/fairs";
 import { getHomeContent } from "@/lib/website/homeContent";
 import { websiteLocaleOrDefault } from "@/lib/website/i18n";
+
+export const dynamic = "force-dynamic";
 
 type LocalizedHomePageProps = {
   params: Promise<{
@@ -27,7 +30,10 @@ export default async function LocalizedHomePage({
   params,
 }: LocalizedHomePageProps) {
   const { locale } = await params;
-  const content = await getHomeContent(websiteLocaleOrDefault(locale));
+  const [content, fairs] = await Promise.all([
+    getHomeContent(websiteLocaleOrDefault(locale)),
+    getPublishedFairs(),
+  ]);
 
-  return <WebsiteHomePage content={content} />;
+  return <WebsiteHomePage content={content} fairs={fairs} />;
 }

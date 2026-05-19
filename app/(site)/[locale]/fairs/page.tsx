@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getPublicFairCategories, getPublishedFairs } from "@/lib/fairs";
 import FairsListClient from "@/components/website/FairsListClient";
 import { getFairCopy, getFairDataReportCopy } from "@/lib/website/fairCopy";
+import { locationKeyFromSearchParams } from "@/lib/website/fairLocations";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,7 @@ type LocalizedFairsPageProps = {
   params: Promise<{
     locale: string;
   }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({
@@ -25,8 +27,10 @@ export async function generateMetadata({
 
 export default async function LocalizedFairsPage({
   params,
+  searchParams,
 }: LocalizedFairsPageProps) {
   const { locale } = await params;
+  const initialLocationKey = locationKeyFromSearchParams(await searchParams);
   const copy = getFairCopy(locale);
   const reportCopy = getFairDataReportCopy(locale);
   const [fairs, categories] = await Promise.all([
@@ -66,6 +70,7 @@ export default async function LocalizedFairsPage({
           locale={locale}
           copy={copy}
           reportCopy={reportCopy}
+          initialLocationKey={initialLocationKey}
         />
       </div>
     </section>

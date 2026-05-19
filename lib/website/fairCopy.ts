@@ -102,6 +102,7 @@ export type FairPageCopy = {
   searchPlaceholder: string;
   categoryFilter: string;
   selectedCategories: string;
+  locationFilter: string;
   resetFilters: string;
   soonestFirst: string;
   latestFirst: string;
@@ -151,6 +152,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     searchPlaceholder: "Search fairs",
     categoryFilter: "Categories",
     selectedCategories: "Selected categories",
+    locationFilter: "Location",
     resetFilters: "Reset filters",
     soonestFirst: "Soonest first",
     latestFirst: "Latest first",
@@ -239,6 +241,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     searchPlaceholder: "Messen suchen",
     categoryFilter: "Kategorien",
     selectedCategories: "Ausgewählte Kategorien",
+    locationFilter: "Standort",
     resetFilters: "Filter zurücksetzen",
     soonestFirst: "Nächste zuerst",
     latestFirst: "Spätere zuerst",
@@ -328,6 +331,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     searchPlaceholder: "展示会を検索",
     categoryFilter: "カテゴリ",
     selectedCategories: "選択中のカテゴリ",
+    locationFilter: "場所",
     resetFilters: "フィルターをリセット",
     soonestFirst: "近い日程順",
     latestFirst: "遅い日程順",
@@ -417,6 +421,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     searchPlaceholder: "Buscar ferias",
     categoryFilter: "Categorías",
     selectedCategories: "Categorías seleccionadas",
+    locationFilter: "Ubicación",
     resetFilters: "Restablecer filtros",
     soonestFirst: "Más próximas primero",
     latestFirst: "Más lejanas primero",
@@ -506,6 +511,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     searchPlaceholder: "Rechercher des salons",
     categoryFilter: "Catégories",
     selectedCategories: "Catégories sélectionnées",
+    locationFilter: "Lieu",
     resetFilters: "Réinitialiser les filtres",
     soonestFirst: "Les plus proches d'abord",
     latestFirst: "Les plus éloignés d'abord",
@@ -595,6 +601,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     searchPlaceholder: "Cerca fiere",
     categoryFilter: "Categorie",
     selectedCategories: "Categorie selezionate",
+    locationFilter: "Luogo",
     resetFilters: "Reimposta filtri",
     soonestFirst: "Prima le più vicine",
     latestFirst: "Prima le più lontane",
@@ -684,6 +691,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     searchPlaceholder: "Pretraži sajmove",
     categoryFilter: "Kategorije",
     selectedCategories: "Odabrane kategorije",
+    locationFilter: "Lokacija",
     resetFilters: "Poništi filtere",
     soonestFirst: "Najbliži prvo",
     latestFirst: "Kasniji prvo",
@@ -773,6 +781,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     searchPlaceholder: "Pretraži sajmove",
     categoryFilter: "Kategorije",
     selectedCategories: "Odabrane kategorije",
+    locationFilter: "Lokacija",
     resetFilters: "Poništi filtre",
     soonestFirst: "Najbliži prvo",
     latestFirst: "Kasniji prvo",
@@ -862,6 +871,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     searchPlaceholder: "मेले खोजें",
     categoryFilter: "श्रेणियां",
     selectedCategories: "चयनित श्रेणियां",
+    locationFilter: "स्थान",
     resetFilters: "फिल्टर रीसेट करें",
     soonestFirst: "सबसे पहले आने वाले",
     latestFirst: "बाद की तिथियां पहले",

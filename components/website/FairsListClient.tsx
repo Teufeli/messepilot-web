@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   FairBadgeStrip,
@@ -16,6 +17,11 @@ import {
   type WebsiteFair,
   type WebsiteFairCategory,
 } from "@/lib/fairs";
+import {
+  fairMatchesLocationKey,
+  locationLabelForKey,
+  normalizeLocationQueryKey,
+} from "@/lib/website/fairLocations";
 import type { FairPageCopy } from "@/lib/website/fairCopy";
 import type { FairDataReportCopy } from "@/lib/website/fairCopy";
 
@@ -45,6 +51,7 @@ type FairsListClientProps = {
   locale: string;
   copy: FairPageCopy;
   reportCopy: FairDataReportCopy;
+  initialLocationKey?: string | null;
 };
 
 const TECHNICAL_CATEGORY_KEYS = new Set(["imported"]);
@@ -427,9 +434,17 @@ function fairSearchValues(
     fair.name,
     fair.city,
     fair.countryISO,
+    fair.venueName,
     fair.organizerName,
     fair.description,
     ...Object.values(fair.localizedDescriptions),
+    ...Object.values(fair.localizedLocationLabels).flatMap((labels) => [
+      labels.cityDisplayName,
+      labels.city,
+      labels.locationName,
+      labels.countryDisplayName,
+      labels.venueName,
+    ]),
     fair.officialWebsite,
     ...publicCategoryIds(fair.categoryIds).flatMap((categoryId) =>
       categoryLabelsForSearch(categoryId, categoriesByKey, locale),
@@ -564,10 +579,16 @@ export default function FairsListClient({
   locale,
   copy,
   reportCopy,
+  initialLocationKey,
 }: FairsListClientProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [sortOrder, setSortOrder] = useState<SortOrder>("soonest");
   const [hidePastFairs, setHidePastFairs] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLocationKey, setSelectedLocationKey] = useState<string | null>(
+    () => normalizeLocationQueryKey(initialLocationKey),
+  );
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [openCategoryIds, setOpenCategoryIds] = useState<string[]>([]);
   const currentTodayKey = useMemo(() => todayDateKey(), []);
@@ -580,9 +601,24 @@ export default function FairsListClient({
     [currentTodayKey, fairs, hidePastFairs],
   );
 
+  const locationFilteredFairs = useMemo(
+    () =>
+      selectedLocationKey
+        ? baseFairs.filter((fair) =>
+            fairMatchesLocationKey(fair, selectedLocationKey),
+          )
+        : baseFairs,
+    [baseFairs, selectedLocationKey],
+  );
+
+  const selectedLocationLabel = useMemo(
+    () => locationLabelForKey(fairs, selectedLocationKey, locale),
+    [fairs, locale, selectedLocationKey],
+  );
+
   const categoryTreeData = useMemo(
-    () => buildCategoryTreeData(baseFairs, categories, locale),
-    [baseFairs, categories, locale],
+    () => buildCategoryTreeData(locationFilteredFairs, categories, locale),
+    [categories, locale, locationFilteredFairs],
   );
 
   const tokens = useMemo(() => searchTokens(searchQuery), [searchQuery]);
@@ -598,7 +634,7 @@ export default function FairsListClient({
 
   const visibleFairs = useMemo(
     () =>
-      baseFairs
+      locationFilteredFairs
         .filter((fair) =>
           fairMatchesSearch(
             fair,
@@ -612,8 +648,8 @@ export default function FairsListClient({
         )
         .sort((a, b) => compareFairsByStartDate(a, b, sortOrder, locale)),
     [
-      baseFairs,
       categoryTreeData.categoriesByKey,
+      locationFilteredFairs,
       locale,
       selectedCategoryKeys,
       sortOrder,
@@ -627,12 +663,23 @@ export default function FairsListClient({
   );
 
   const hasSearchOrCategoryFilter =
-    tokens.length > 0 || selectedCategoryIds.length > 0;
+    tokens.length > 0 || selectedCategoryIds.length > 0 || Boolean(selectedLocationKey);
   const hasChangedFilters =
     hasSearchOrCategoryFilter || hidePastFairs !== true;
 
   const fairDetailPath = (fairId: string) =>
     locale === "en" ? `/fairs/${fairId}` : `/${locale}/fairs/${fairId}`;
+
+  const clearLocationFilter = () => {
+    setSelectedLocationKey(null);
+
+    const params = new URLSearchParams(window.location.search);
+    params.delete("location");
+    const nextSearch = params.toString();
+    router.replace(nextSearch ? `${pathname}?${nextSearch}` : pathname, {
+      scroll: false,
+    });
+  };
 
   const toggleCategory = (categoryId: string) => {
     setSelectedCategoryIds((currentCategoryIds) =>
@@ -653,6 +700,9 @@ export default function FairsListClient({
   const resetFilters = () => {
     setSearchQuery("");
     setSelectedCategoryIds([]);
+    if (selectedLocationKey) {
+      clearLocationFilter();
+    }
     setHidePastFairs(true);
   };
 
@@ -718,6 +768,24 @@ export default function FairsListClient({
             ) : null}
           </div>
         </div>
+
+        {selectedLocationKey ? (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              {copy.locationFilter}
+            </p>
+            <button
+              type="button"
+              onClick={clearLocationFilter}
+              className="inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              <span className="truncate">
+                {copy.locationFilter}: {selectedLocationLabel ?? selectedLocationKey}
+              </span>
+              <span aria-hidden="true">x</span>
+            </button>
+          </div>
+        ) : null}
 
         {categoryTreeData.roots.length > 0 ? (
           <details className="group rounded-2xl border border-slate-200 bg-white shadow-sm">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getPublicFairCategories, getPublishedFairs } from "@/lib/fairs";
 import FairsListClient from "@/components/website/FairsListClient";
 import { getFairCopy, getFairDataReportCopy } from "@/lib/website/fairCopy";
+import { locationKeyFromSearchParams } from "@/lib/website/fairLocations";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,12 @@ export const metadata: Metadata = {
   description: copy.description,
 };
 
-export default async function FairsPage() {
+type FairsPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function FairsPage({ searchParams }: FairsPageProps) {
+  const initialLocationKey = locationKeyFromSearchParams(await searchParams);
   const [fairs, categories] = await Promise.all([
     getPublishedFairs(),
     getPublicFairCategories(),
@@ -51,6 +57,7 @@ export default async function FairsPage() {
           locale="en"
           copy={copy}
           reportCopy={reportCopy}
+          initialLocationKey={initialLocationKey}
         />
       </div>
     </section>
