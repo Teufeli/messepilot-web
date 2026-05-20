@@ -7,6 +7,7 @@ import type { WeatherConditionLabelKey } from "@/lib/website/weather";
 
 export type WeatherCopy = {
   currentWeather: string;
+  forecast: string;
   availabilityNote: string;
   observedAt: string;
   conditionLabels: Record<WeatherConditionLabelKey, string>;
@@ -120,6 +121,7 @@ const conditionLabelsByLocale: Record<
 const weatherCopyByLocale: Record<WebsiteLocaleCode, WeatherCopy> = {
   en: {
     currentWeather: "Current weather",
+    forecast: "Forecast",
     availabilityNote:
       "Weather is shown for fair locations with an ongoing fair or a fair taking place within the next 180 days.",
     observedAt: "Observed",
@@ -127,6 +129,7 @@ const weatherCopyByLocale: Record<WebsiteLocaleCode, WeatherCopy> = {
   },
   de: {
     currentWeather: "Aktuelles Wetter",
+    forecast: "Tagesprognose",
     availabilityNote:
       "Wetter zeigen wir für Messestandorte, an denen aktuell eine Messe läuft oder innerhalb der nächsten 180 Tage stattfindet.",
     observedAt: "Beobachtet",
@@ -134,6 +137,7 @@ const weatherCopyByLocale: Record<WebsiteLocaleCode, WeatherCopy> = {
   },
   ja: {
     currentWeather: "現在の天気",
+    forecast: "天気予報",
     availabilityNote:
       "天気は、現在開催中または今後180日以内に開催される展示会がある場所で表示されます。",
     observedAt: "観測",
@@ -141,6 +145,7 @@ const weatherCopyByLocale: Record<WebsiteLocaleCode, WeatherCopy> = {
   },
   es: {
     currentWeather: "Tiempo actual",
+    forecast: "Previsión",
     availabilityNote:
       "El tiempo se muestra para ubicaciones de ferias con una feria en curso o una feria que tendrá lugar en los próximos 180 días.",
     observedAt: "Observado",
@@ -148,6 +153,7 @@ const weatherCopyByLocale: Record<WebsiteLocaleCode, WeatherCopy> = {
   },
   fr: {
     currentWeather: "Météo actuelle",
+    forecast: "Prévisions",
     availabilityNote:
       "La météo s’affiche pour les lieux de salons avec un salon en cours ou prévu dans les 180 prochains jours.",
     observedAt: "Observé",
@@ -155,6 +161,7 @@ const weatherCopyByLocale: Record<WebsiteLocaleCode, WeatherCopy> = {
   },
   it: {
     currentWeather: "Meteo attuale",
+    forecast: "Previsioni",
     availabilityNote:
       "Il meteo viene mostrato per i luoghi delle fiere con una fiera in corso o prevista nei prossimi 180 giorni.",
     observedAt: "Osservato",
@@ -162,6 +169,7 @@ const weatherCopyByLocale: Record<WebsiteLocaleCode, WeatherCopy> = {
   },
   bs: {
     currentWeather: "Trenutno vrijeme",
+    forecast: "Prognoza",
     availabilityNote:
       "Vrijeme prikazujemo za lokacije sajmova na kojima je sajam u toku ili se održava u narednih 180 dana.",
     observedAt: "Zabilježeno",
@@ -169,6 +177,7 @@ const weatherCopyByLocale: Record<WebsiteLocaleCode, WeatherCopy> = {
   },
   hr: {
     currentWeather: "Trenutačno vrijeme",
+    forecast: "Prognoza",
     availabilityNote:
       "Vrijeme prikazujemo za lokacije sajmova na kojima je sajam u tijeku ili se održava u sljedećih 180 dana.",
     observedAt: "Zabilježeno",
@@ -176,6 +185,7 @@ const weatherCopyByLocale: Record<WebsiteLocaleCode, WeatherCopy> = {
   },
   hi: {
     currentWeather: "वर्तमान मौसम",
+    forecast: "पूर्वानुमान",
     availabilityNote:
       "मौसम उन मेला स्थानों के लिए दिखाया जाता है जहां अभी मेला चल रहा है या अगले 180 दिनों में होने वाला है।",
     observedAt: "देखा गया",

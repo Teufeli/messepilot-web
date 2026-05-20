@@ -25,6 +25,15 @@ export type PublicWeatherCurrent = {
   observedAt: Date | null;
 };
 
+export type PublicWeatherDailyForecast = {
+  date: Date | null;
+  conditionCode: string | null;
+  iconKey: WeatherIconKey;
+  temperatureMinCelsius: number | null;
+  temperatureMaxCelsius: number | null;
+  precipitationChance: number | null;
+};
+
 export type PublicWeatherAttribution = {
   providerLabel: string | null;
   legalUrl: string | null;
@@ -39,6 +48,7 @@ export type PublicWeatherLocationSnapshot = {
   longitude: number | null;
   status: PublicWeatherSnapshotStatus;
   current: PublicWeatherCurrent | null;
+  dailyForecast: PublicWeatherDailyForecast[];
   attribution: PublicWeatherAttribution | null;
   lastRefreshAt: Date | null;
   expiresAt: Date | null;
@@ -79,5 +89,18 @@ export function isDisplayablePublicWeatherSnapshot(
       snapshot.current &&
       typeof snapshot.current.temperatureCelsius === "number" &&
       Number.isFinite(snapshot.current.temperatureCelsius),
+  );
+}
+
+export function hasDisplayablePublicWeatherForecast(
+  snapshot: PublicWeatherLocationSnapshot | null | undefined,
+): snapshot is PublicWeatherLocationSnapshot & {
+  current: PublicWeatherCurrent & { temperatureCelsius: number };
+  dailyForecast: [PublicWeatherDailyForecast, ...PublicWeatherDailyForecast[]];
+} {
+  return (
+    isDisplayablePublicWeatherSnapshot(snapshot) &&
+    Array.isArray(snapshot.dailyForecast) &&
+    snapshot.dailyForecast.length > 0
   );
 }

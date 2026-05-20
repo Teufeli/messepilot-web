@@ -1,5 +1,7 @@
 import {
+  hasDisplayablePublicWeatherForecast,
   isDisplayablePublicWeatherSnapshot,
+  type PublicWeatherDailyForecast,
   type PublicWeatherLocationSnapshot,
   type WeatherConditionLabelKey,
   type WeatherIconKey,
@@ -41,6 +43,10 @@ function formatTemperature(value: number, locale: string) {
   return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value)} °C`;
 }
 
+function formatForecastTemperature(value: number, locale: string) {
+  return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value)} °C`;
+}
+
 function formatObservedAt(value: Date, locale: string) {
   return new Intl.DateTimeFormat(locale, {
     day: "numeric",
@@ -48,6 +54,103 @@ function formatObservedAt(value: Date, locale: string) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(value);
+}
+
+function formatForecastDate(value: Date | null, locale: string) {
+  if (!value) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(value);
+}
+
+function formatTemperatureRange(
+  forecast: PublicWeatherDailyForecast,
+  locale: string,
+) {
+  const min =
+    typeof forecast.temperatureMinCelsius === "number"
+      ? formatForecastTemperature(forecast.temperatureMinCelsius, locale)
+      : null;
+  const max =
+    typeof forecast.temperatureMaxCelsius === "number"
+      ? formatForecastTemperature(forecast.temperatureMaxCelsius, locale)
+      : null;
+
+  if (min && max) {
+    return `${min} / ${max}`;
+  }
+
+  return min ?? max;
+}
+
+function formatPrecipitationChance(value: number | null, locale: string) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    return null;
+  }
+
+  const normalized = value <= 1 ? value : value <= 100 ? value / 100 : null;
+  if (normalized === null) {
+    return null;
+  }
+
+  return new Intl.NumberFormat(locale, {
+    style: "percent",
+    maximumFractionDigits: 0,
+  }).format(normalized);
+}
+
+function ForecastList({
+  forecast,
+  locale,
+  copy,
+}: {
+  forecast: PublicWeatherDailyForecast[];
+  locale: string;
+  copy: WeatherCopy;
+}) {
+  return (
+    <div className="mt-4 border-t border-slate-200 pt-4">
+      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+        {copy.forecast}
+      </h3>
+      <ol className="mt-3 divide-y divide-slate-200 rounded-2xl bg-white/70">
+        {forecast.map((day, index) => {
+          const dateLabel = formatForecastDate(day.date, locale);
+          const conditionLabel =
+            day.iconKey !== "unknown"
+              ? copy.conditionLabels[day.iconKey] ?? copy.conditionLabels.unknown
+              : day.conditionCode ?? copy.conditionLabels.unknown;
+          const temperatureRange = formatTemperatureRange(day, locale);
+          const precipitationChance = formatPrecipitationChance(
+            day.precipitationChance,
+            locale,
+          );
+          const details = [
+            conditionLabel,
+            temperatureRange,
+            precipitationChance,
+          ].filter((detail): detail is string => Boolean(detail));
+
+          return (
+            <li key={`${day.date?.toISOString() ?? "forecast"}-${index}`} className="p-3">
+              {dateLabel ? (
+                <p className="text-sm font-semibold text-slate-950">{dateLabel}</p>
+              ) : null}
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                {details.join(" · ")}
+              </p>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
 }
 
 export function WeatherSummary({
@@ -129,6 +232,7 @@ export function WeatherDetailPanel({
   copy: WeatherCopy;
 }) {
   const hasWeather = isDisplayablePublicWeatherSnapshot(weather);
+  const hasForecast = hasDisplayablePublicWeatherForecast(weather);
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
@@ -145,6 +249,13 @@ export function WeatherDetailPanel({
             showObservedAt
             variant="detail"
           />
+          {hasForecast ? (
+            <ForecastList
+              forecast={weather.dailyForecast}
+              locale={locale}
+              copy={copy}
+            />
+          ) : null}
         </>
       ) : null}
       <p

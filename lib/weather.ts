@@ -11,6 +11,7 @@ import {
   normalizeWeatherIconKey,
   type PublicWeatherAttribution,
   type PublicWeatherCurrent,
+  type PublicWeatherDailyForecast,
   type PublicWeatherLocationSnapshot,
   type PublicWeatherSnapshotStatus,
   type PublicWeatherSnapshotsByLocationKey,
@@ -28,6 +29,7 @@ type FirestorePublicWeatherSnapshot = Record<string, unknown> & {
   longitude?: unknown;
   status?: unknown;
   current?: unknown;
+  dailyForecast?: unknown;
   attribution?: unknown;
   lastRefreshAt?: unknown;
   expiresAt?: unknown;
@@ -124,6 +126,41 @@ function mapCurrent(value: unknown): PublicWeatherCurrent | null {
     : null;
 }
 
+function mapDailyForecastDay(value: unknown): PublicWeatherDailyForecast | null {
+  const data = objectRecord(value);
+  if (!data) {
+    return null;
+  }
+
+  const forecast: PublicWeatherDailyForecast = {
+    date: timestampToDate(data.date),
+    conditionCode: normalizedText(data.conditionCode),
+    iconKey: normalizeWeatherIconKey(data.iconKey),
+    temperatureMinCelsius: finiteNumber(data.temperatureMinCelsius),
+    temperatureMaxCelsius: finiteNumber(data.temperatureMaxCelsius),
+    precipitationChance: finiteNumber(data.precipitationChance),
+  };
+
+  return forecast.date !== null ||
+    forecast.conditionCode !== null ||
+    forecast.iconKey !== "unknown" ||
+    forecast.temperatureMinCelsius !== null ||
+    forecast.temperatureMaxCelsius !== null ||
+    forecast.precipitationChance !== null
+    ? forecast
+    : null;
+}
+
+function mapDailyForecast(value: unknown): PublicWeatherDailyForecast[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map(mapDailyForecastDay)
+    .filter((forecast): forecast is PublicWeatherDailyForecast => Boolean(forecast));
+}
+
 function mapAttribution(value: unknown): PublicWeatherAttribution | null {
   const data = objectRecord(value);
   if (!data) {
@@ -151,6 +188,7 @@ function mapPublicWeatherSnapshot(
     longitude: finiteNumber(data.longitude),
     status: normalizeSnapshotStatus(data.status),
     current: mapCurrent(data.current),
+    dailyForecast: mapDailyForecast(data.dailyForecast),
     attribution: mapAttribution(data.attribution),
     lastRefreshAt: timestampToDate(data.lastRefreshAt),
     expiresAt: timestampToDate(data.expiresAt),
