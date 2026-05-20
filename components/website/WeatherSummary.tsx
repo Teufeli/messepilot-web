@@ -17,25 +17,28 @@ type WeatherSummaryProps = {
   variant?: "compact" | "detail";
 };
 
-function weatherToneClass(iconKey: WeatherIconKey) {
+const defaultForecastLimit = 5;
+
+function weatherSymbol(iconKey: WeatherIconKey) {
   switch (iconKey) {
     case "sunny":
-      return "bg-amber-300 ring-amber-100";
+      return "☀️";
     case "partly-cloudy":
-      return "bg-sky-300 ring-sky-100";
+      return "⛅️";
     case "cloudy":
+      return "☁️";
     case "fog":
-      return "bg-slate-300 ring-slate-100";
+      return "🌫️";
     case "rain":
-      return "bg-blue-400 ring-blue-100";
+      return "🌧️";
     case "snow":
-      return "bg-cyan-200 ring-cyan-50";
+      return "❄️";
     case "storm":
-      return "bg-violet-400 ring-violet-100";
+      return "⛈️";
     case "wind":
-      return "bg-teal-300 ring-teal-100";
+      return "🌬️";
     case "unknown":
-      return "bg-slate-400 ring-slate-100";
+      return "◦";
   }
 }
 
@@ -43,8 +46,8 @@ function formatTemperature(value: number, locale: string) {
   return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value)} °C`;
 }
 
-function formatForecastTemperature(value: number, locale: string) {
-  return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value)} °C`;
+function formatForecastNumber(value: number, locale: string) {
+  return new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value);
 }
 
 function formatObservedAt(value: Date, locale: string) {
@@ -75,18 +78,19 @@ function formatTemperatureRange(
 ) {
   const min =
     typeof forecast.temperatureMinCelsius === "number"
-      ? formatForecastTemperature(forecast.temperatureMinCelsius, locale)
+      ? formatForecastNumber(forecast.temperatureMinCelsius, locale)
       : null;
   const max =
     typeof forecast.temperatureMaxCelsius === "number"
-      ? formatForecastTemperature(forecast.temperatureMaxCelsius, locale)
+      ? formatForecastNumber(forecast.temperatureMaxCelsius, locale)
       : null;
 
   if (min && max) {
-    return `${min} / ${max}`;
+    return `${min} / ${max} °C`;
   }
 
-  return min ?? max;
+  const singleValue = min ?? max;
+  return singleValue ? `${singleValue} °C` : null;
 }
 
 function formatPrecipitationChance(value: number | null, locale: string) {
@@ -107,20 +111,27 @@ function formatPrecipitationChance(value: number | null, locale: string) {
 
 function ForecastList({
   forecast,
+  limit,
   locale,
   copy,
 }: {
   forecast: PublicWeatherDailyForecast[];
+  limit: number;
   locale: string;
   copy: WeatherCopy;
 }) {
+  const displayedForecast = forecast.slice(0, Math.max(0, limit));
+  if (displayedForecast.length === 0) {
+    return null;
+  }
+
   return (
     <div className="mt-4 border-t border-slate-200 pt-4">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
         {copy.forecast}
       </h3>
       <ol className="mt-3 divide-y divide-slate-200 rounded-2xl bg-white/70">
-        {forecast.map((day, index) => {
+        {displayedForecast.map((day, index) => {
           const dateLabel = formatForecastDate(day.date, locale);
           const conditionLabel =
             day.iconKey !== "unknown"
@@ -139,12 +150,17 @@ function ForecastList({
 
           return (
             <li key={`${day.date?.toISOString() ?? "forecast"}-${index}`} className="p-3">
-              {dateLabel ? (
-                <p className="text-sm font-semibold text-slate-950">{dateLabel}</p>
-              ) : null}
-              <p className="mt-1 text-sm leading-6 text-slate-600">
-                {details.join(" · ")}
-              </p>
+              <div className="flex items-start gap-2 text-sm leading-6">
+                <span aria-hidden="true" className="mt-0.5 w-5 shrink-0 text-base leading-none">
+                  {weatherSymbol(day.iconKey)}
+                </span>
+                <div className="min-w-0">
+                  {dateLabel ? (
+                    <p className="font-semibold text-slate-950">{dateLabel}</p>
+                  ) : null}
+                  <p className="text-slate-600">{details.join(" · ")}</p>
+                </div>
+              </div>
             </li>
           );
         })}
@@ -195,11 +211,12 @@ export function WeatherSummary({
         <span
           aria-hidden="true"
           className={[
-            "rounded-full ring-4",
-            variant === "detail" ? "h-3 w-3" : "h-2.5 w-2.5",
-            weatherToneClass(weather.current.iconKey),
+            "shrink-0 leading-none",
+            variant === "detail" ? "text-base" : "text-sm",
           ].join(" ")}
-        />
+        >
+          {weatherSymbol(weather.current.iconKey)}
+        </span>
         <span>
           {formatTemperature(weather.current.temperatureCelsius, locale)} ·{" "}
           {conditionLabel}
@@ -226,10 +243,12 @@ export function WeatherDetailPanel({
   weather,
   locale,
   copy,
+  forecastLimit = defaultForecastLimit,
 }: {
   weather: PublicWeatherLocationSnapshot | null | undefined;
   locale: string;
   copy: WeatherCopy;
+  forecastLimit?: number;
 }) {
   const hasWeather = isDisplayablePublicWeatherSnapshot(weather);
   const hasForecast = hasDisplayablePublicWeatherForecast(weather);
@@ -252,6 +271,7 @@ export function WeatherDetailPanel({
           {hasForecast ? (
             <ForecastList
               forecast={weather.dailyForecast}
+              limit={forecastLimit}
               locale={locale}
               copy={copy}
             />
