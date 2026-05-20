@@ -1,8 +1,10 @@
 import Link from "next/link";
 
 import { HomeFairLocationMap } from "@/components/website/HomeFairLocationMap";
+import { getPublicWeatherSnapshotsByLocationKeys } from "@/lib/weather";
 import type { WebsiteFair } from "@/lib/fairs";
 import type { HomeContent } from "@/lib/website/homeContent";
+import { buildFairLocationGroups } from "@/lib/website/fairLocations";
 import { getHomeLocationMapCopy } from "@/lib/website/homeLocationMapCopy";
 
 type WebsiteHomePageProps = {
@@ -10,7 +12,12 @@ type WebsiteHomePageProps = {
   fairs: WebsiteFair[];
 };
 
-export function WebsiteHomePage({ content, fairs }: WebsiteHomePageProps) {
+export async function WebsiteHomePage({ content, fairs }: WebsiteHomePageProps) {
+  const locationGroups = buildFairLocationGroups(fairs, content.locale);
+  const weatherSnapshots = await getPublicWeatherSnapshotsByLocationKeys(
+    locationGroups.map((group) => group.key),
+  );
+
   return (
     <section className="space-y-8">
       <div
@@ -52,6 +59,7 @@ export function WebsiteHomePage({ content, fairs }: WebsiteHomePageProps) {
         fairs={fairs}
         locale={content.locale}
         copy={getHomeLocationMapCopy(content.locale)}
+        weatherSnapshots={weatherSnapshots}
       />
     </section>
   );

@@ -3,6 +3,7 @@ import {
   isSupportedWebsiteLocale,
   type WebsiteLocaleCode,
 } from "@/lib/website/i18n";
+import type { WeatherConditionLabelKey } from "@/lib/website/weather";
 
 export type HomeLocationMapCopy = {
   eyebrow: string;
@@ -15,6 +16,7 @@ export type HomeLocationMapCopy = {
   fairPlural: string;
   viewFairs: string;
   dateToBeConfirmed: string;
+  weatherConditionLabels: Record<WeatherConditionLabelKey, string>;
 };
 
 const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy> = {
@@ -30,6 +32,17 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairPlural: "fairs",
     viewFairs: "View fairs",
     dateToBeConfirmed: "Date to be confirmed",
+    weatherConditionLabels: {
+      sunny: "Sunny",
+      "partly-cloudy": "Partly cloudy",
+      cloudy: "Cloudy",
+      rain: "Rain",
+      snow: "Snow",
+      storm: "Storm",
+      fog: "Fog",
+      wind: "Wind",
+      unknown: "Weather",
+    },
   },
   de: {
     eyebrow: "Messestandorte",
@@ -43,6 +56,17 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairPlural: "Messen",
     viewFairs: "Messen anzeigen",
     dateToBeConfirmed: "Datum noch offen",
+    weatherConditionLabels: {
+      sunny: "Sonnig",
+      "partly-cloudy": "Teilweise bewölkt",
+      cloudy: "Bewölkt",
+      rain: "Regen",
+      snow: "Schnee",
+      storm: "Gewitter",
+      fog: "Nebel",
+      wind: "Wind",
+      unknown: "Wetter",
+    },
   },
   ja: {
     eyebrow: "展示会の場所",
@@ -56,6 +80,17 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairPlural: "展示会",
     viewFairs: "展示会を見る",
     dateToBeConfirmed: "日程未定",
+    weatherConditionLabels: {
+      sunny: "晴れ",
+      "partly-cloudy": "一部くもり",
+      cloudy: "くもり",
+      rain: "雨",
+      snow: "雪",
+      storm: "雷雨",
+      fog: "霧",
+      wind: "風",
+      unknown: "天気",
+    },
   },
   es: {
     eyebrow: "Ubicaciones de ferias",
@@ -69,6 +104,17 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairPlural: "ferias",
     viewFairs: "Ver ferias",
     dateToBeConfirmed: "Fecha por confirmar",
+    weatherConditionLabels: {
+      sunny: "Soleado",
+      "partly-cloudy": "Parcialmente nublado",
+      cloudy: "Nublado",
+      rain: "Lluvia",
+      snow: "Nieve",
+      storm: "Tormenta",
+      fog: "Niebla",
+      wind: "Viento",
+      unknown: "Tiempo",
+    },
   },
   fr: {
     eyebrow: "Lieux de salons",
@@ -82,6 +128,17 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairPlural: "salons",
     viewFairs: "Voir les salons",
     dateToBeConfirmed: "Date à confirmer",
+    weatherConditionLabels: {
+      sunny: "Ensoleillé",
+      "partly-cloudy": "Partiellement nuageux",
+      cloudy: "Nuageux",
+      rain: "Pluie",
+      snow: "Neige",
+      storm: "Orage",
+      fog: "Brouillard",
+      wind: "Vent",
+      unknown: "Météo",
+    },
   },
   it: {
     eyebrow: "Luoghi delle fiere",
@@ -95,6 +152,17 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairPlural: "fiere",
     viewFairs: "Vedi fiere",
     dateToBeConfirmed: "Data da confermare",
+    weatherConditionLabels: {
+      sunny: "Soleggiato",
+      "partly-cloudy": "Parzialmente nuvoloso",
+      cloudy: "Nuvoloso",
+      rain: "Pioggia",
+      snow: "Neve",
+      storm: "Temporale",
+      fog: "Nebbia",
+      wind: "Vento",
+      unknown: "Meteo",
+    },
   },
   bs: {
     eyebrow: "Lokacije sajmova",
@@ -108,6 +176,17 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairPlural: "sajmovi",
     viewFairs: "Prikaži sajmove",
     dateToBeConfirmed: "Datum će biti potvrđen",
+    weatherConditionLabels: {
+      sunny: "Sunčano",
+      "partly-cloudy": "Djelimično oblačno",
+      cloudy: "Oblačno",
+      rain: "Kiša",
+      snow: "Snijeg",
+      storm: "Oluja",
+      fog: "Magla",
+      wind: "Vjetar",
+      unknown: "Vrijeme",
+    },
   },
   hr: {
     eyebrow: "Lokacije sajmova",
@@ -121,6 +200,17 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairPlural: "sajmovi",
     viewFairs: "Prikaži sajmove",
     dateToBeConfirmed: "Datum će biti potvrđen",
+    weatherConditionLabels: {
+      sunny: "Sunčano",
+      "partly-cloudy": "Djelomično oblačno",
+      cloudy: "Oblačno",
+      rain: "Kiša",
+      snow: "Snijeg",
+      storm: "Oluja",
+      fog: "Magla",
+      wind: "Vjetar",
+      unknown: "Vrijeme",
+    },
   },
   hi: {
     eyebrow: "मेले के स्थान",
@@ -134,6 +224,17 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairPlural: "मेले",
     viewFairs: "मेले देखें",
     dateToBeConfirmed: "तारीख की पुष्टि बाकी है",
+    weatherConditionLabels: {
+      sunny: "धूप",
+      "partly-cloudy": "आंशिक बादल",
+      cloudy: "बादल",
+      rain: "बारिश",
+      snow: "बर्फ",
+      storm: "तूफ़ान",
+      fog: "कोहरा",
+      wind: "हवा",
+      unknown: "मौसम",
+    },
   },
 };
 
