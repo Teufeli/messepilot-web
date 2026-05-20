@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { getPublicFairCategories, getPublishedFairs } from "@/lib/fairs";
+import { getPublicWeatherSnapshotsByLocationKeys } from "@/lib/weather";
 import FairsListClient from "@/components/website/FairsListClient";
 import { getFairCopy, getFairDataReportCopy } from "@/lib/website/fairCopy";
-import { locationKeyFromSearchParams } from "@/lib/website/fairLocations";
+import {
+  fairLocationKey,
+  locationKeyFromSearchParams,
+} from "@/lib/website/fairLocations";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +28,9 @@ export default async function FairsPage({ searchParams }: FairsPageProps) {
     getPublishedFairs(),
     getPublicFairCategories(),
   ]);
+  const weatherSnapshots = await getPublicWeatherSnapshotsByLocationKeys(
+    fairs.map((fair) => fairLocationKey(fair)),
+  );
 
   return (
     <section className="space-y-8">
@@ -58,6 +65,7 @@ export default async function FairsPage({ searchParams }: FairsPageProps) {
           copy={copy}
           reportCopy={reportCopy}
           initialLocationKey={initialLocationKey}
+          weatherSnapshots={weatherSnapshots}
         />
       </div>
     </section>

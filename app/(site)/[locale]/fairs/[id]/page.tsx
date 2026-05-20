@@ -11,6 +11,7 @@ import {
   ExistingFairCorrectionReport,
   FairDataDisclaimerNotice,
 } from "@/components/website/FairDataReports";
+import { WeatherDetailPanel } from "@/components/website/WeatherSummary";
 import {
   formatFairDateRange,
   formatFairTitleForDisplay,
@@ -18,7 +19,10 @@ import {
   getPublishedFairById,
   localizedFairDescription,
 } from "@/lib/fairs";
+import { getPublicWeatherSnapshotsByLocationKeys } from "@/lib/weather";
 import { getFairCopy, getFairDataReportCopy } from "@/lib/website/fairCopy";
+import { fairLocationKey } from "@/lib/website/fairLocations";
+import { getWeatherCopy } from "@/lib/website/weatherCopy";
 
 export const dynamic = "force-dynamic";
 
@@ -80,6 +84,10 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
 
   const fairDescription = localizedFairDescription(fair, locale);
   const fairDisplayTitle = formatFairTitleForDisplay(fair.name, locale);
+  const weatherCopy = getWeatherCopy(locale);
+  const locationKey = fairLocationKey(fair);
+  const weatherSnapshots = await getPublicWeatherSnapshotsByLocationKeys([locationKey]);
+  const weather = locationKey ? weatherSnapshots[locationKey] ?? null : null;
   const mapURL =
     fair.latitude !== undefined && fair.longitude !== undefined
       ? `https://www.google.com/maps/search/?api=1&query=${fair.latitude},${fair.longitude}`
@@ -230,6 +238,8 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
 
         <aside className="space-y-6 rounded-3xl border border-white/70 bg-white/90 p-8 shadow-sm backdrop-blur-xl">
           <FairUpdatesPanel fair={fair} copy={copy} locale={locale} />
+
+          <WeatherDetailPanel weather={weather} locale={locale} copy={weatherCopy} />
 
           <section>
             <h2 className="text-xl font-semibold text-slate-950">{copy.links}</h2>

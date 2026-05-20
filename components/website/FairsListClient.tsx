@@ -11,6 +11,7 @@ import {
   FairDataDisclaimerNotice,
   MissingFairSuggestionReport,
 } from "@/components/website/FairDataReports";
+import { WeatherSummary } from "@/components/website/WeatherSummary";
 import {
   formatFairTitleForDisplay,
   formatFairDateRange,
@@ -18,12 +19,15 @@ import {
   type WebsiteFairCategory,
 } from "@/lib/fairs";
 import {
+  fairLocationKey,
   fairMatchesLocationKey,
   locationLabelForKey,
   normalizeLocationQueryKey,
 } from "@/lib/website/fairLocations";
 import type { FairPageCopy } from "@/lib/website/fairCopy";
 import type { FairDataReportCopy } from "@/lib/website/fairCopy";
+import type { PublicWeatherSnapshotsByLocationKey } from "@/lib/website/weather";
+import { getWeatherCopy } from "@/lib/website/weatherCopy";
 
 type SortOrder = "soonest" | "latest";
 
@@ -52,6 +56,7 @@ type FairsListClientProps = {
   copy: FairPageCopy;
   reportCopy: FairDataReportCopy;
   initialLocationKey?: string | null;
+  weatherSnapshots: PublicWeatherSnapshotsByLocationKey;
 };
 
 const TECHNICAL_CATEGORY_KEYS = new Set(["imported"]);
@@ -580,6 +585,7 @@ export default function FairsListClient({
   copy,
   reportCopy,
   initialLocationKey,
+  weatherSnapshots,
 }: FairsListClientProps) {
   const pathname = usePathname();
   const [sortOrder, setSortOrder] = useState<SortOrder>("soonest");
@@ -591,6 +597,7 @@ export default function FairsListClient({
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [openCategoryIds, setOpenCategoryIds] = useState<string[]>([]);
   const currentTodayKey = useMemo(() => todayDateKey(), []);
+  const weatherCopy = useMemo(() => getWeatherCopy(locale), [locale]);
 
   const baseFairs = useMemo(
     () =>
@@ -847,6 +854,10 @@ export default function FairsListClient({
 
       <FairDataDisclaimerNotice copy={reportCopy.disclaimer} />
 
+      <p className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm leading-6 text-slate-600">
+        {weatherCopy.availabilityNote}
+      </p>
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm font-medium text-slate-600">
           {visibleFairs.length}{" "}
@@ -897,87 +908,97 @@ export default function FairsListClient({
               </h2>
 
               <div className="grid gap-4">
-                {group.fairs.map((fair) => (
-                  <article
-                    key={fair.id}
-                    className="rounded-2xl border border-slate-200 bg-white/85 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
-                  >
-                    <FairLifecycleNotice
-                      fair={fair}
-                      copy={copy}
-                      variant="card"
-                      className="mb-5"
-                    />
+                {group.fairs.map((fair) => {
+                  const weather =
+                    weatherSnapshots[fairLocationKey(fair) ?? ""] ?? null;
 
-                    <div className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-start md:justify-between">
-                      <div className="min-w-0 flex-1 space-y-2">
-                        <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
+                  return (
+                    <article
+                      key={fair.id}
+                      className="rounded-2xl border border-slate-200 bg-white/85 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+                    >
+                      <FairLifecycleNotice
+                        fair={fair}
+                        copy={copy}
+                        variant="card"
+                        className="mb-5"
+                      />
+
+                      <div className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-start md:justify-between">
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
+                            <Link
+                              href={fairDetailPath(fair.id)}
+                              className="hover:text-blue-700"
+                            >
+                              {formatFairTitleForDisplay(fair.name, locale)}
+                            </Link>
+                          </h3>
+
+                          <FairBadgeStrip
+                            badges={fair.badges}
+                            labels={copy.badges}
+                            maxCount={3}
+                            hideProminentLifecycleBadges
+                          />
+
+                          <p className="text-sm font-medium text-slate-600">
+                            {fair.city}
+                            {fair.city && fair.countryISO ? ", " : ""}
+                            {fair.countryISO}
+                          </p>
+
+                          <WeatherSummary
+                            weather={weather}
+                            locale={locale}
+                            conditionLabels={weatherCopy.conditionLabels}
+                          />
+
+                          <p className="text-sm text-slate-700">
+                            {formatFairDateRange(
+                              fair.startDate,
+                              fair.endDate,
+                              locale,
+                              copy.dateToBeConfirmed,
+                            )}
+                          </p>
+
+                          {fair.organizerName ? (
+                            <p className="text-sm text-slate-600">
+                              {copy.organizer}: {fair.organizerName}
+                            </p>
+                          ) : null}
+                        </div>
+
+                        <div className="flex shrink-0 flex-wrap gap-2 md:justify-end">
                           <Link
                             href={fairDetailPath(fair.id)}
-                            className="hover:text-blue-700"
+                            className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
                           >
-                            {formatFairTitleForDisplay(fair.name, locale)}
+                            {copy.details}
                           </Link>
-                        </h3>
-
-                        <FairBadgeStrip
-                          badges={fair.badges}
-                          labels={copy.badges}
-                          maxCount={3}
-                          hideProminentLifecycleBadges
-                        />
-
-                        <p className="text-sm font-medium text-slate-600">
-                          {fair.city}
-                          {fair.city && fair.countryISO ? ", " : ""}
-                          {fair.countryISO}
-                        </p>
-
-                        <p className="text-sm text-slate-700">
-                          {formatFairDateRange(
-                            fair.startDate,
-                            fair.endDate,
-                            locale,
-                            copy.dateToBeConfirmed,
-                          )}
-                        </p>
-
-                        {fair.organizerName ? (
-                          <p className="text-sm text-slate-600">
-                            {copy.organizer}: {fair.organizerName}
-                          </p>
-                        ) : null}
+                        </div>
                       </div>
 
-                      <div className="flex shrink-0 flex-wrap gap-2 md:justify-end">
-                        <Link
-                          href={fairDetailPath(fair.id)}
-                          className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
-                        >
-                          {copy.details}
-                        </Link>
-
-                      </div>
-                    </div>
-
-                    {publicCategoryIds(fair.categoryIds).length > 0 ? (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {publicCategoryIds(fair.categoryIds).map((categoryId) => (
-                          <span
-                            key={categoryId}
-                            className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700"
-                          >
-                            {categoryLabelById(
-                              categoryId,
-                              categoryTreeData,
-                              locale,
-                            )}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                  </article>
-                ))}
+                      {publicCategoryIds(fair.categoryIds).length > 0 ? (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {publicCategoryIds(fair.categoryIds).map((categoryId) => (
+                            <span
+                              key={categoryId}
+                              className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700"
+                            >
+                              {categoryLabelById(
+                                categoryId,
+                                categoryTreeData,
+                                locale,
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
+                    </article>
+                  );
+                })}
               </div>
             </section>
           ))}
