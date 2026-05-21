@@ -1,3 +1,6 @@
+"use client";
+
+import { useWeatherTemperatureUnitPreference } from "@/components/website/TemperatureUnitSelector";
 import {
   hasDisplayablePublicWeatherForecast,
   isDisplayablePublicWeatherSnapshot,
@@ -7,6 +10,11 @@ import {
   type WeatherIconKey,
 } from "@/lib/website/weather";
 import type { WeatherCopy } from "@/lib/website/weatherCopy";
+import {
+  formatWeatherTemperatureFromCelsius,
+  formatWeatherTemperatureRangeFromCelsius,
+  type WeatherTemperatureUnitPreference,
+} from "@/lib/website/weatherUnits";
 
 type WeatherSummaryProps = {
   weather: PublicWeatherLocationSnapshot | null | undefined;
@@ -15,6 +23,7 @@ type WeatherSummaryProps = {
   observedAtLabel?: string;
   showObservedAt?: boolean;
   variant?: "compact" | "detail";
+  unitPreference?: WeatherTemperatureUnitPreference;
 };
 
 const defaultForecastLimit = 5;
@@ -42,14 +51,6 @@ function weatherSymbol(iconKey: WeatherIconKey) {
   }
 }
 
-function formatTemperature(value: number, locale: string) {
-  return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value)} °C`;
-}
-
-function formatForecastNumber(value: number, locale: string) {
-  return new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value);
-}
-
 function formatObservedAt(value: Date, locale: string) {
   return new Intl.DateTimeFormat(locale, {
     day: "numeric",
@@ -75,22 +76,14 @@ function formatForecastDate(value: Date | null, locale: string) {
 function formatTemperatureRange(
   forecast: PublicWeatherDailyForecast,
   locale: string,
+  unitPreference: WeatherTemperatureUnitPreference,
 ) {
-  const min =
-    typeof forecast.temperatureMinCelsius === "number"
-      ? formatForecastNumber(forecast.temperatureMinCelsius, locale)
-      : null;
-  const max =
-    typeof forecast.temperatureMaxCelsius === "number"
-      ? formatForecastNumber(forecast.temperatureMaxCelsius, locale)
-      : null;
-
-  if (min && max) {
-    return `${min} / ${max} °C`;
-  }
-
-  const singleValue = min ?? max;
-  return singleValue ? `${singleValue} °C` : null;
+  return formatWeatherTemperatureRangeFromCelsius(
+    forecast.temperatureMinCelsius,
+    forecast.temperatureMaxCelsius,
+    locale,
+    unitPreference,
+  );
 }
 
 function formatPrecipitationChance(value: number | null, locale: string) {
@@ -114,11 +107,13 @@ function ForecastList({
   limit,
   locale,
   copy,
+  unitPreference,
 }: {
   forecast: PublicWeatherDailyForecast[];
   limit: number;
   locale: string;
   copy: WeatherCopy;
+  unitPreference: WeatherTemperatureUnitPreference;
 }) {
   const displayedForecast = forecast.slice(0, Math.max(0, limit));
   if (displayedForecast.length === 0) {
@@ -137,7 +132,11 @@ function ForecastList({
             day.iconKey !== "unknown"
               ? copy.conditionLabels[day.iconKey] ?? copy.conditionLabels.unknown
               : day.conditionCode ?? copy.conditionLabels.unknown;
-          const temperatureRange = formatTemperatureRange(day, locale);
+          const temperatureRange = formatTemperatureRange(
+            day,
+            locale,
+            unitPreference,
+          );
           const precipitationChance = formatPrecipitationChance(
             day.precipitationChance,
             locale,
@@ -176,7 +175,11 @@ export function WeatherSummary({
   observedAtLabel,
   showObservedAt = false,
   variant = "compact",
+  unitPreference,
 }: WeatherSummaryProps) {
+  const { preference } = useWeatherTemperatureUnitPreference();
+  const activeUnitPreference = unitPreference ?? preference;
+
   if (!isDisplayablePublicWeatherSnapshot(weather)) {
     return null;
   }
@@ -218,7 +221,12 @@ export function WeatherSummary({
           {weatherSymbol(weather.current.iconKey)}
         </span>
         <span>
-          {formatTemperature(weather.current.temperatureCelsius, locale)} ·{" "}
+          {formatWeatherTemperatureFromCelsius(
+            weather.current.temperatureCelsius,
+            locale,
+            activeUnitPreference,
+          )}{" "}
+          ·{" "}
           {conditionLabel}
         </span>
       </span>
@@ -250,6 +258,7 @@ export function WeatherDetailPanel({
   copy: WeatherCopy;
   forecastLimit?: number;
 }) {
+  const { preference } = useWeatherTemperatureUnitPreference();
   const hasWeather = isDisplayablePublicWeatherSnapshot(weather);
   const hasForecast = hasDisplayablePublicWeatherForecast(weather);
 
@@ -267,6 +276,7 @@ export function WeatherDetailPanel({
             observedAtLabel={copy.observedAt}
             showObservedAt
             variant="detail"
+            unitPreference={preference}
           />
           {hasForecast ? (
             <ForecastList
@@ -274,6 +284,7 @@ export function WeatherDetailPanel({
               limit={forecastLimit}
               locale={locale}
               copy={copy}
+              unitPreference={preference}
             />
           ) : null}
         </>

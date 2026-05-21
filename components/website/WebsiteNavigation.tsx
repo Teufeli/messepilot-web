@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import LanguageSwitcher from "@/components/website/LanguageSwitcher";
+import { TemperatureUnitSelector } from "@/components/website/TemperatureUnitSelector";
 import type {
   WebsiteNavigationContent,
   WebsiteNavigationItem,
@@ -402,7 +403,10 @@ export default function WebsiteNavigation() {
         })}
       </nav>
 
-      <LanguageSwitcher languages={languages} />
+      <div className="flex items-center gap-1">
+        <LanguageSwitcher languages={languages} />
+        <TemperatureUnitSelector locale={currentLocale} />
+      </div>
     </div>
   );
 }
