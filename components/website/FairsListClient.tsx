@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import {
   FairBadgeStrip,
   FairLifecycleNotice,
@@ -385,8 +385,14 @@ function selectedCategoryMatchKeys(
   return selectedKeys;
 }
 
+const SEARCH_COMBINING_MARKS_PATTERN = /[\u0300-\u036f]/g;
+
 function normalizeSearchText(value: string): string {
-  return value.normalize("NFKC").toLowerCase();
+  return value
+    .normalize("NFKD")
+    .replace(SEARCH_COMBINING_MARKS_PATTERN, "")
+    .replace(/[ßẞ]/g, "ss")
+    .toLowerCase();
 }
 
 function searchTokens(searchQuery: string): string[] {
@@ -703,18 +709,25 @@ export default function FairsListClient({
     setHidePastFairs(true);
   };
 
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSearchQuery((currentSearchQuery) => currentSearchQuery.trim());
+  };
+
   return (
     <div className="space-y-5">
       <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder={copy.searchPlaceholder}
-            aria-label={copy.searchPlaceholder}
-            className="min-h-11 w-full rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-4 focus:ring-slate-200/70"
-          />
+          <form role="search" onSubmit={submitSearch} className="min-w-0">
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder={copy.searchPlaceholder}
+              aria-label={copy.searchPlaceholder}
+              className="min-h-11 w-full rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-4 focus:ring-slate-200/70"
+            />
+          </form>
 
           <div className="flex flex-wrap items-center gap-3">
             <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
