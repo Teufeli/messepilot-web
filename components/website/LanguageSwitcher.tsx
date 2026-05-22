@@ -12,6 +12,9 @@ type LanguageSwitcherProps = {
   languages: WebsiteLanguage[];
 };
 
+const headerDropdownOpenEvent = "messepilot:website-header-dropdown-opened";
+const languageDropdownId = "language";
+
 function isLocaleLikeSegment(segment: string | undefined): boolean {
   return Boolean(segment && /^[a-z]{2}(-[a-z]{2})?$/i.test(segment));
 }
@@ -91,12 +94,14 @@ function getLocalizedPath(
     : `/${language.routePrefix}${basePath}`;
 }
 
-function shortLanguageLabel(languageCode: string): string {
-  return languageCode.toUpperCase();
-}
-
 function closedLanguageLabel(language: WebsiteLanguage): string {
   return language.flagEmoji.trim() || "🌐";
+}
+
+function languageOptionAriaLabel(language: WebsiteLanguage): string {
+  return [language.nativeName, language.displayName]
+    .filter((label, index, labels) => label && labels.indexOf(label) === index)
+    .join(", ");
 }
 
 function persistLanguagePreference(languageCode: string) {
@@ -180,12 +185,26 @@ export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
       }
     }
 
+    function handleHeaderDropdownOpen(event: Event) {
+      if (
+        event instanceof CustomEvent &&
+        event.detail !== languageDropdownId
+      ) {
+        setIsOpen(false);
+      }
+    }
+
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener(headerDropdownOpenEvent, handleHeaderDropdownOpen);
 
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener(
+        headerDropdownOpenEvent,
+        handleHeaderDropdownOpen,
+      );
     };
   }, [isOpen]);
 
@@ -201,7 +220,19 @@ export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
         aria-haspopup="menu"
         aria-expanded={isOpen}
         className="inline-flex h-8 w-10 items-center justify-center rounded-full text-lg leading-none text-slate-700 outline-none transition hover:bg-white/80 hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-blue-500/35"
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={() => {
+          setIsOpen((current) => {
+            const nextOpen = !current;
+            if (nextOpen) {
+              window.dispatchEvent(
+                new CustomEvent(headerDropdownOpenEvent, {
+                  detail: languageDropdownId,
+                }),
+              );
+            }
+            return nextOpen;
+          });
+        }}
       >
         <span aria-hidden="true">{closedLanguageLabel(currentLanguage)}</span>
       </button>
@@ -209,7 +240,7 @@ export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
       {isOpen ? (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-2 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white/95 p-1 text-sm shadow-xl shadow-slate-900/10 backdrop-blur"
+          className="absolute right-0 top-full z-[200] mt-2 grid w-32 grid-cols-3 gap-1 overflow-hidden rounded-2xl border border-slate-200 bg-white/95 p-1.5 text-sm shadow-xl shadow-slate-900/10 backdrop-blur"
         >
           {sortedLanguages.map((language) => {
             const isSelected =
@@ -221,8 +252,10 @@ export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
                 type="button"
                 role="menuitemradio"
                 aria-checked={isSelected}
+                aria-label={languageOptionAriaLabel(language)}
+                title={languageOptionAriaLabel(language)}
                 className={[
-                  "flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition",
+                  "relative flex h-9 w-9 items-center justify-center rounded-xl text-lg leading-none transition focus-visible:ring-2 focus-visible:ring-blue-500/35",
                   isSelected
                     ? "bg-slate-950 text-white"
                     : "text-slate-700 hover:bg-slate-100 hover:text-slate-950",
@@ -235,21 +268,17 @@ export default function LanguageSwitcher({ languages }: LanguageSwitcherProps) {
                   );
                 }}
               >
-                <span aria-hidden="true" className="text-base leading-none">
+                <span aria-hidden="true">
                   {closedLanguageLabel(language)}
                 </span>
-                <span className="font-semibold uppercase">
-                  {shortLanguageLabel(language.languageCode)}
-                </span>
-                <span
-                  className={[
-                    "min-w-0 flex-1 truncate",
-                    isSelected ? "text-white/80" : "text-slate-500",
-                  ].join(" ")}
-                >
-                  {language.nativeName}
-                </span>
-                {isSelected ? <span aria-hidden="true">✓</span> : null}
+                {isSelected ? (
+                  <span
+                    aria-hidden="true"
+                    className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold leading-none text-white ring-2 ring-white"
+                  >
+                    ✓
+                  </span>
+                ) : null}
               </button>
             );
           })}

@@ -374,7 +374,7 @@ export default function WebsiteNavigation() {
     .map((item) => localizeNavigationItem(item, currentLanguage));
 
   return (
-    <div className="flex w-full flex-wrap items-center justify-center gap-6 text-sm sm:w-auto sm:justify-end">
+    <div className="relative z-[110] flex w-full flex-wrap items-center justify-center gap-6 text-sm sm:w-auto sm:justify-end">
       <nav
         aria-label={navigationContent.menuLabel}
         className="flex flex-wrap items-center justify-center gap-2 sm:justify-end"

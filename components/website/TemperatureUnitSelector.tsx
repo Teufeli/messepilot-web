@@ -23,6 +23,9 @@ type TemperatureUnitSelectorProps = {
   locale: string;
 };
 
+const headerDropdownOpenEvent = "messepilot:website-header-dropdown-opened";
+const temperatureUnitDropdownId = "temperature-unit";
+
 type WeatherTemperatureUnitPreferenceState = {
   preference: WeatherTemperatureUnitPreference;
   resolvedUnit: ResolvedWeatherTemperatureUnit;
@@ -161,12 +164,26 @@ export function TemperatureUnitSelector({
       }
     }
 
+    function handleHeaderDropdownOpen(event: Event) {
+      if (
+        event instanceof CustomEvent &&
+        event.detail !== temperatureUnitDropdownId
+      ) {
+        setIsOpen(false);
+      }
+    }
+
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener(headerDropdownOpenEvent, handleHeaderDropdownOpen);
 
     return () => {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener(
+        headerDropdownOpenEvent,
+        handleHeaderDropdownOpen,
+      );
     };
   }, [isOpen]);
 
@@ -178,7 +195,19 @@ export function TemperatureUnitSelector({
         aria-haspopup="menu"
         aria-expanded={isOpen}
         className="inline-flex min-w-10 items-center justify-center rounded-full px-2.5 py-1.5 text-sm font-semibold text-slate-700 outline-none transition hover:bg-white/80 hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-blue-500/35"
-        onClick={() => setIsOpen((current) => !current)}
+        onClick={() => {
+          setIsOpen((current) => {
+            const nextOpen = !current;
+            if (nextOpen) {
+              window.dispatchEvent(
+                new CustomEvent(headerDropdownOpenEvent, {
+                  detail: temperatureUnitDropdownId,
+                }),
+              );
+            }
+            return nextOpen;
+          });
+        }}
       >
         {preferenceClosedLabel(preference, copy.autoShort)}
       </button>
@@ -186,7 +215,7 @@ export function TemperatureUnitSelector({
       {isOpen ? (
         <div
           role="menu"
-          className="absolute right-0 top-full z-50 mt-2 w-40 overflow-hidden rounded-2xl border border-slate-200 bg-white/95 p-1 text-sm shadow-xl shadow-slate-900/10 backdrop-blur"
+          className="absolute right-0 top-full z-[200] mt-2 w-40 overflow-hidden rounded-2xl border border-slate-200 bg-white/95 p-1 text-sm shadow-xl shadow-slate-900/10 backdrop-blur"
         >
           {weatherTemperatureUnitPreferences.map((option) => {
             const isSelected = option === preference;
