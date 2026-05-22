@@ -7,6 +7,7 @@ import {
   fairLocationKey,
   locationKeyFromSearchParams,
 } from "@/lib/website/fairLocations";
+import { fairSearchQueryFromSearchParams } from "@/lib/website/fairSearchParams";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,9 @@ type FairsPageProps = {
 };
 
 export default async function FairsPage({ searchParams }: FairsPageProps) {
-  const initialLocationKey = locationKeyFromSearchParams(await searchParams);
+  const resolvedSearchParams = await searchParams;
+  const initialLocationKey = locationKeyFromSearchParams(resolvedSearchParams);
+  const initialSearchQuery = fairSearchQueryFromSearchParams(resolvedSearchParams);
   const [fairs, categories] = await Promise.all([
     getPublishedFairs(),
     getPublicFairCategories(),
@@ -65,6 +68,7 @@ export default async function FairsPage({ searchParams }: FairsPageProps) {
           copy={copy}
           reportCopy={reportCopy}
           initialLocationKey={initialLocationKey}
+          initialSearchQuery={initialSearchQuery}
           weatherSnapshots={weatherSnapshots}
         />
       </div>

@@ -1,4 +1,9 @@
 import type { WebsiteFair } from "@/lib/fairs";
+import {
+  isCurrentOrFutureFair,
+  todayDateKey,
+  utcDateKey,
+} from "@/lib/website/fairDateFilters";
 
 export type FairLocationCoordinates = {
   latitude: number;
@@ -148,15 +153,6 @@ function hasUsableCoordinates(fair: WebsiteFair): fair is WebsiteFair & FairLoca
   );
 }
 
-function utcDateKey(date: Date) {
-  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-}
-
-function todayDateKey() {
-  const now = new Date();
-  return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-}
-
 function compareFairsForPreview(a: WebsiteFair, b: WebsiteFair): number {
   const todayKey = todayDateKey();
   const aTime = a.startDate?.getTime();
@@ -200,8 +196,14 @@ export function buildFairLocationGroups(
     }
   >();
 
+  const currentTodayKey = todayDateKey();
+
   for (const fair of fairs) {
-    if (fair.lifecycleStatus === "ended" || !hasUsableCoordinates(fair)) {
+    if (
+      fair.lifecycleStatus === "ended" ||
+      !isCurrentOrFutureFair(fair, currentTodayKey) ||
+      !hasUsableCoordinates(fair)
+    ) {
       continue;
     }
 

@@ -24,6 +24,8 @@ import {
   locationLabelForKey,
   normalizeLocationQueryKey,
 } from "@/lib/website/fairLocations";
+import { isPastFair, todayDateKey } from "@/lib/website/fairDateFilters";
+import { FAIR_SEARCH_QUERY_PARAM } from "@/lib/website/fairSearchParams";
 import type { FairPageCopy } from "@/lib/website/fairCopy";
 import type { FairDataReportCopy } from "@/lib/website/fairCopy";
 import type { PublicWeatherSnapshotsByLocationKey } from "@/lib/website/weather";
@@ -56,6 +58,7 @@ type FairsListClientProps = {
   copy: FairPageCopy;
   reportCopy: FairDataReportCopy;
   initialLocationKey?: string | null;
+  initialSearchQuery?: string;
   weatherSnapshots: PublicWeatherSnapshotsByLocationKey;
 };
 
@@ -130,20 +133,6 @@ function compareFairsByStartDate(
   }
 
   return a.name.localeCompare(b.name, locale);
-}
-
-function utcDateKey(date: Date) {
-  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-}
-
-function todayDateKey() {
-  const now = new Date();
-  return Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-}
-
-function isPastFair(fair: WebsiteFair, todayKey: number) {
-  const endDate = fair.endDate ?? fair.startDate;
-  return endDate ? utcDateKey(endDate) < todayKey : false;
 }
 
 function monthGroupKey(date: Date | null) {
@@ -402,6 +391,69 @@ function searchTokens(searchQuery: string): string[] {
     .filter(Boolean);
 }
 
+function searchAcronym(value: string): string | null {
+  const words = normalizeSearchText(value)
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+
+  return words.length > 1 ? words.map((word) => word[0]).join("") : null;
+}
+
+function countrySearchValues(countryISO: string, locale: string): string[] {
+  const normalizedCountryISO = countryISO.trim().toUpperCase();
+  if (!normalizedCountryISO) {
+    return [];
+  }
+
+  const values = new Set([normalizedCountryISO]);
+
+  for (const localeCode of categoryLabelFallbackCodes(locale)) {
+    try {
+      const label = new Intl.DisplayNames([localeCode], { type: "region" }).of(
+        normalizedCountryISO,
+      );
+      if (label) {
+        values.add(label);
+        const acronym = searchAcronym(label);
+        if (acronym) {
+          values.add(acronym);
+        }
+      }
+    } catch {
+      // Ignore unsupported region display names and keep the ISO fallback.
+    }
+  }
+
+  return [...values];
+}
+
+function locationSearchAliases(fair: WebsiteFair, locationKey: string | null): string[] {
+  const normalizedCity = normalizeSearchText(fair.city);
+  const aliases = new Set<string>();
+
+  if (
+    locationKey === "DE:munich" ||
+    normalizedCity === "munich" ||
+    normalizedCity === "munchen"
+  ) {
+    aliases.add("Munich");
+    aliases.add("München");
+  }
+
+  if (
+    locationKey === "CN:beijing" ||
+    normalizedCity === "beijing" ||
+    normalizedCity === "peking" ||
+    normalizedCity === "bejing"
+  ) {
+    aliases.add("Beijing");
+    aliases.add("Peking");
+    aliases.add("Bejing");
+  }
+
+  return [...aliases];
+}
+
 function categoryLabelsForSearch(
   categoryId: string,
   categoriesByKey: Map<string, WebsiteFairCategory>,
@@ -441,10 +493,15 @@ function fairSearchValues(
   categoriesByKey: Map<string, WebsiteFairCategory>,
   locale: string,
 ): string[] {
-  return [
+  const locationKey = fairLocationKey(fair);
+  const values = [
     fair.name,
     fair.city,
     fair.countryISO,
+    ...countrySearchValues(fair.countryISO, locale),
+    ...locationSearchAliases(fair, locationKey),
+    locationKey,
+    locationKey?.replace(/[:-]+/g, " "),
     fair.venueName,
     fair.organizerName,
     fair.description,
@@ -461,6 +518,15 @@ function fairSearchValues(
       categoryLabelsForSearch(categoryId, categoriesByKey, locale),
     ),
   ].filter((value): value is string => Boolean(value?.trim()));
+
+  return [
+    ...new Set(
+      values.flatMap((value) => {
+        const acronym = searchAcronym(value);
+        return acronym ? [value, acronym] : [value];
+      }),
+    ),
+  ];
 }
 
 function fairMatchesSearch(
@@ -591,12 +657,13 @@ export default function FairsListClient({
   copy,
   reportCopy,
   initialLocationKey,
+  initialSearchQuery = "",
   weatherSnapshots,
 }: FairsListClientProps) {
   const pathname = usePathname();
   const [sortOrder, setSortOrder] = useState<SortOrder>("soonest");
   const [hidePastFairs, setHidePastFairs] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(() => initialSearchQuery.trim());
   const [selectedLocationKey, setSelectedLocationKey] = useState<string | null>(
     () => normalizeLocationQueryKey(initialLocationKey),
   );
@@ -604,6 +671,37 @@ export default function FairsListClient({
   const [openCategoryIds, setOpenCategoryIds] = useState<string[]>([]);
   const currentTodayKey = useMemo(() => todayDateKey(), []);
   const weatherCopy = useMemo(() => getWeatherCopy(locale), [locale]);
+  const activeSearchQuery = searchQuery.trim();
+
+  const replaceFilterUrl = ({
+    locationKey = selectedLocationKey,
+    nextSearchQuery = searchQuery,
+  }: {
+    locationKey?: string | null;
+    nextSearchQuery?: string;
+  }) => {
+    const params = new URLSearchParams(window.location.search);
+    const normalizedSearchQuery = nextSearchQuery.trim();
+
+    if (normalizedSearchQuery) {
+      params.set(FAIR_SEARCH_QUERY_PARAM, normalizedSearchQuery);
+    } else {
+      params.delete(FAIR_SEARCH_QUERY_PARAM);
+    }
+
+    if (locationKey) {
+      params.set("location", locationKey);
+    } else {
+      params.delete("location");
+    }
+
+    const queryString = params.toString();
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${pathname}${queryString ? `?${queryString}` : ""}`,
+    );
+  };
 
   const baseFairs = useMemo(
     () =>
@@ -684,6 +782,17 @@ export default function FairsListClient({
 
   const clearLocationFilterState = () => {
     setSelectedLocationKey(null);
+    replaceFilterUrl({ locationKey: null });
+  };
+
+  const clearSearchFilter = () => {
+    setSearchQuery("");
+    replaceFilterUrl({ nextSearchQuery: "" });
+  };
+
+  const updateSearchQuery = (nextSearchQuery: string) => {
+    setSearchQuery(nextSearchQuery);
+    replaceFilterUrl({ nextSearchQuery });
   };
 
   const toggleCategory = (categoryId: string) => {
@@ -707,11 +816,14 @@ export default function FairsListClient({
     setSelectedCategoryIds([]);
     setSelectedLocationKey(null);
     setHidePastFairs(true);
+    replaceFilterUrl({ locationKey: null, nextSearchQuery: "" });
   };
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSearchQuery((currentSearchQuery) => currentSearchQuery.trim());
+    const normalizedSearchQuery = searchQuery.trim();
+    setSearchQuery(normalizedSearchQuery);
+    replaceFilterUrl({ nextSearchQuery: normalizedSearchQuery });
   };
 
   return (
@@ -722,7 +834,7 @@ export default function FairsListClient({
             <input
               type="search"
               value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
+              onChange={(event) => updateSearchQuery(event.target.value)}
               placeholder={copy.searchPlaceholder}
               aria-label={copy.searchPlaceholder}
               className="min-h-11 w-full rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-4 focus:ring-slate-200/70"
@@ -788,22 +900,38 @@ export default function FairsListClient({
           </div>
         </div>
 
-        {selectedLocationKey ? (
+        {selectedLocationKey || activeSearchQuery ? (
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-              {copy.locationFilter}
+              {copy.selectedFilters}
             </p>
-            <Link
-              href={pathname}
-              scroll={false}
-              onClick={clearLocationFilterState}
-              className="inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
-            >
-              <span className="truncate">
-                {copy.locationFilter}: {selectedLocationLabel ?? selectedLocationKey}
-              </span>
-              <span aria-hidden="true">x</span>
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              {selectedLocationKey ? (
+                <button
+                  type="button"
+                  onClick={clearLocationFilterState}
+                  className="inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  <span className="truncate">
+                    {copy.locationFilter}: {selectedLocationLabel ?? selectedLocationKey}
+                  </span>
+                  <span aria-hidden="true">x</span>
+                </button>
+              ) : null}
+
+              {activeSearchQuery ? (
+                <button
+                  type="button"
+                  onClick={clearSearchFilter}
+                  className="inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  <span className="truncate">
+                    {copy.searchFilter}: {activeSearchQuery}
+                  </span>
+                  <span aria-hidden="true">x</span>
+                </button>
+              ) : null}
+            </div>
           </div>
         ) : null}
 
