@@ -1,6 +1,6 @@
 import {
   fairCategoryLabelById,
-  publicFairCategoryIds,
+  publicKnownFairCategoryIds,
   type WebsiteFair,
   type WebsiteFairCategory,
 } from "@/lib/fairs";
@@ -23,7 +23,7 @@ export function FairCategoryChips({
   locale,
   copy,
 }: FairCategoryChipsProps) {
-  const categoryIds = publicFairCategoryIds(fair.categoryIds);
+  const categoryIds = publicKnownFairCategoryIds(fair.categoryIds, categories);
 
   if (categoryIds.length === 0) {
     return null;

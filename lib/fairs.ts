@@ -94,6 +94,8 @@ export type WebsiteFairCategory = {
   parentId?: string;
   rootId?: string;
   level?: number;
+  status?: string;
+  reviewStatus?: string;
   sortOrder?: number;
   labels: Record<string, string>;
 };
@@ -137,6 +139,7 @@ type FirestoreFairCategoryDocument = {
   rootId?: string | null;
   level?: number;
   status?: string;
+  reviewStatus?: string;
   sortOrder?: number;
   labels?: Record<string, unknown>;
   localized?: Record<string, unknown>;
@@ -196,6 +199,19 @@ export function publicFairCategoryIds(
       seen.add(normalized);
       return true;
     });
+}
+
+export function publicKnownFairCategoryIds(
+  categories: Array<string | null | undefined> | undefined,
+  publicCategories: WebsiteFairCategory[],
+): string[] {
+  const publicCategoryKeys = new Set(
+    publicCategories.map((category) => normalizedCategoryKey(category.id)),
+  );
+
+  return publicFairCategoryIds(categories).filter((categoryId) =>
+    publicCategoryKeys.has(normalizedCategoryKey(categoryId)),
+  );
 }
 
 function publicPrimaryCategoryId(
@@ -320,7 +336,12 @@ function localizedCategoryLabels(
 
 function isPublicFairCategoryStatus(status: string | undefined): boolean {
   const normalized = normalizedText(status)?.toLowerCase();
-  return !normalized || normalized === "active";
+  return normalized === "active";
+}
+
+function isPublicFairCategoryReviewStatus(reviewStatus: string | undefined): boolean {
+  const normalized = normalizedText(reviewStatus)?.toLowerCase();
+  return !normalized || normalized === "approved";
 }
 
 function mapFairCategoryDocument(
@@ -329,7 +350,12 @@ function mapFairCategoryDocument(
 ): WebsiteFairCategory | null {
   const id = normalizedText(data.categoryId) ?? normalizedText(data.id) ?? documentId;
 
-  if (!id || isTechnicalPublicCategory(id) || !isPublicFairCategoryStatus(data.status)) {
+  if (
+    !id ||
+    isTechnicalPublicCategory(id) ||
+    !isPublicFairCategoryStatus(data.status) ||
+    !isPublicFairCategoryReviewStatus(data.reviewStatus)
+  ) {
     return null;
   }
 
@@ -344,6 +370,8 @@ function mapFairCategoryDocument(
         : undefined,
     rootId: rootId && !isTechnicalPublicCategory(rootId) ? rootId : undefined,
     level: finiteNumber(data.level),
+    status: normalizedText(data.status),
+    reviewStatus: normalizedText(data.reviewStatus),
     sortOrder: finiteNumber(data.sortOrder),
     labels: localizedCategoryLabels(data),
   };
@@ -617,54 +645,36 @@ export async function getPublishedFairs(): Promise<WebsiteFair[]> {
 }
 
 export async function getPublicFairCategories(): Promise<WebsiteFairCategory[]> {
-  let categoryDocuments:
-    | Array<{
-        id: string;
-        data: () => unknown;
-      }>
-    | null = null;
-
   try {
     const activeSnapshot = await getDocs(
       query(collection(db, "fairCategories"), where("status", "==", "active")),
     );
-    categoryDocuments = activeSnapshot.docs;
+    return activeSnapshot.docs
+      .map((document) =>
+        mapFairCategoryDocument(
+          document.id,
+          document.data() as FirestoreFairCategoryDocument,
+        ),
+      )
+      .filter((category): category is WebsiteFairCategory => Boolean(category))
+      .sort((a, b) => {
+        const aOrder = a.sortOrder ?? Number.MAX_SAFE_INTEGER;
+        const bOrder = b.sortOrder ?? Number.MAX_SAFE_INTEGER;
+        if (aOrder !== bOrder) {
+          return aOrder - bOrder;
+        }
+
+        const aLevel = a.level ?? Number.MAX_SAFE_INTEGER;
+        const bLevel = b.level ?? Number.MAX_SAFE_INTEGER;
+        if (aLevel !== bLevel) {
+          return aLevel - bLevel;
+        }
+
+        return a.id.localeCompare(b.id);
+      });
   } catch {
-    categoryDocuments = null;
+    return [];
   }
-
-  if (!categoryDocuments || categoryDocuments.length === 0) {
-    try {
-      const snapshot = await getDocs(collection(db, "fairCategories"));
-      categoryDocuments = snapshot.docs;
-    } catch {
-      categoryDocuments = [];
-    }
-  }
-
-  return categoryDocuments
-    .map((document) =>
-      mapFairCategoryDocument(
-        document.id,
-        document.data() as FirestoreFairCategoryDocument,
-      ),
-    )
-    .filter((category): category is WebsiteFairCategory => Boolean(category))
-    .sort((a, b) => {
-      const aOrder = a.sortOrder ?? Number.MAX_SAFE_INTEGER;
-      const bOrder = b.sortOrder ?? Number.MAX_SAFE_INTEGER;
-      if (aOrder !== bOrder) {
-        return aOrder - bOrder;
-      }
-
-      const aLevel = a.level ?? Number.MAX_SAFE_INTEGER;
-      const bLevel = b.level ?? Number.MAX_SAFE_INTEGER;
-      if (aLevel !== bLevel) {
-        return aLevel - bLevel;
-      }
-
-      return a.id.localeCompare(b.id);
-    });
 }
 
 function localizedFairCategoryFallbackCodes(locale: string): string[] {

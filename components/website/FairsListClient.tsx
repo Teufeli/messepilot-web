@@ -110,6 +110,15 @@ function publicCategoryIds(categoryIds: string[]): string[] {
     });
 }
 
+function knownPublicCategoryIds(
+  categoryIds: string[],
+  categoriesByKey: Map<string, WebsiteFairCategory>,
+): string[] {
+  return publicCategoryIds(categoryIds).filter((categoryId) =>
+    categoriesByKey.has(categoryKey(categoryId)),
+  );
+}
+
 function compareFairsByStartDate(
   a: WebsiteFair,
   b: WebsiteFair,
@@ -215,14 +224,6 @@ function compareCategories(
   );
 }
 
-function fallbackCategory(categoryId: string): WebsiteFairCategory {
-  return {
-    id: categoryId,
-    sortOrder: Number.MAX_SAFE_INTEGER,
-    labels: {},
-  };
-}
-
 function buildCategoryTreeData(
   fairs: WebsiteFair[],
   categories: WebsiteFairCategory[],
@@ -240,17 +241,12 @@ function buildCategoryTreeData(
   }
 
   const usedCategoryKeys = new Set<string>();
-  const fallbackCategoriesByKey = new Map<string, WebsiteFairCategory>();
 
   for (const fair of fairs) {
     for (const categoryId of publicCategoryIds(fair.categoryIds)) {
       const key = categoryKey(categoryId);
-      usedCategoryKeys.add(key);
-
-      if (!categoriesByKey.has(key)) {
-        const category = fallbackCategory(categoryId);
-        fallbackCategoriesByKey.set(key, category);
-        categoriesById.set(category.id, category);
+      if (categoriesByKey.has(key)) {
+        usedCategoryKeys.add(key);
       }
     }
   }
@@ -284,12 +280,8 @@ function buildCategoryTreeData(
 
   const nodesByKey = new Map<string, CategoryTreeNode>();
   const includedCategories = [...includedKeys]
-    .map(
-      (key) =>
-        categoriesByKey.get(key) ??
-        fallbackCategoriesByKey.get(key) ??
-        fallbackCategory(key),
-    )
+    .map((key) => categoriesByKey.get(key))
+    .filter((category): category is WebsiteFairCategory => Boolean(category))
     .sort((a, b) => compareCategories(a, b, locale));
 
   for (const category of includedCategories) {
@@ -514,7 +506,7 @@ function fairSearchValues(
       labels.venueName,
     ]),
     fair.officialWebsite,
-    ...publicCategoryIds(fair.categoryIds).flatMap((categoryId) =>
+    ...knownPublicCategoryIds(fair.categoryIds, categoriesByKey).flatMap((categoryId) =>
       categoryLabelsForSearch(categoryId, categoriesByKey, locale),
     ),
   ].filter((value): value is string => Boolean(value?.trim()));
@@ -549,12 +541,13 @@ function fairMatchesSearch(
 function fairMatchesSelectedCategories(
   fair: WebsiteFair,
   selectedCategoryKeys: Set<string>,
+  categoriesByKey: Map<string, WebsiteFairCategory>,
 ): boolean {
   if (selectedCategoryKeys.size === 0) {
     return true;
   }
 
-  return publicCategoryIds(fair.categoryIds).some((categoryId) =>
+  return knownPublicCategoryIds(fair.categoryIds, categoriesByKey).some((categoryId) =>
     selectedCategoryKeys.has(categoryKey(categoryId)),
   );
 }
@@ -754,7 +747,11 @@ export default function FairsListClient({
           ),
         )
         .filter((fair) =>
-          fairMatchesSelectedCategories(fair, selectedCategoryKeys),
+          fairMatchesSelectedCategories(
+            fair,
+            selectedCategoryKeys,
+            categoryTreeData.categoriesByKey,
+          ),
         )
         .sort((a, b) => compareFairsByStartDate(a, b, sortOrder, locale)),
     [
@@ -1052,6 +1049,10 @@ export default function FairsListClient({
                 {group.fairs.map((fair) => {
                   const weather =
                     weatherSnapshots[fairLocationKey(fair) ?? ""] ?? null;
+                  const categoryIds = knownPublicCategoryIds(
+                    fair.categoryIds,
+                    categoryTreeData.categoriesByKey,
+                  );
 
                   return (
                     <article
@@ -1121,9 +1122,9 @@ export default function FairsListClient({
                         </div>
                       </div>
 
-                      {publicCategoryIds(fair.categoryIds).length > 0 ? (
+                      {categoryIds.length > 0 ? (
                         <div className="mt-4 flex flex-wrap gap-2">
-                          {publicCategoryIds(fair.categoryIds).map((categoryId) => (
+                          {categoryIds.map((categoryId) => (
                             <span
                               key={categoryId}
                               className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700"

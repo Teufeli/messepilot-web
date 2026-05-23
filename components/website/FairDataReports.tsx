@@ -3,7 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import {
   fairCategoryLabelById,
-  publicFairCategoryIds,
+  publicKnownFairCategoryIds,
   type WebsiteFair,
   type WebsiteFairCategory,
 } from "@/lib/fairs";
@@ -127,7 +127,7 @@ function fairSnapshot(
   categories: WebsiteFairCategory[],
   locale: string,
 ) {
-  const categoryIds = publicFairCategoryIds(fair.categoryIds);
+  const categoryIds = publicKnownFairCategoryIds(fair.categoryIds, categories);
   const categoryLabels = categoryIds.map((categoryId) =>
     fairCategoryLabelById(categoryId, categories, locale),
   );
