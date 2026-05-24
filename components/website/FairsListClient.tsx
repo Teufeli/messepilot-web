@@ -1070,96 +1070,106 @@ export default function FairsListClient({
                         className="mb-5"
                       />
 
-                      {titleImageUrl ? (
-                        <Link
-                          href={detailPath}
-                          className="relative mb-5 block aspect-video overflow-hidden rounded-2xl border border-slate-100 bg-slate-100"
-                        >
-                          <Image
-                            src={titleImageUrl}
-                            alt={`${formatFairTitleForDisplay(
-                              fair.name,
-                              locale,
-                            )} title image`}
-                            fill
-                            sizes="(min-width: 768px) 720px, 100vw"
-                            className="object-cover transition duration-300 hover:scale-[1.02]"
-                          />
-                        </Link>
-                      ) : null}
-
-                      <div className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-start md:justify-between">
-                        <div className="min-w-0 flex-1 space-y-2">
-                          <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
-                            <Link
-                              href={detailPath}
-                              className="hover:text-blue-700"
-                            >
-                              {formatFairTitleForDisplay(fair.name, locale)}
-                            </Link>
-                          </h3>
-
-                          <FairBadgeStrip
-                            badges={fair.badges}
-                            labels={copy.badges}
-                            maxCount={3}
-                            hideProminentLifecycleBadges
-                          />
-
-                          <p className="text-sm font-medium text-slate-600">
-                            {fair.city}
-                            {fair.city && fair.countryISO ? ", " : ""}
-                            {fair.countryISO}
-                          </p>
-
-                          <WeatherSummary
-                            weather={weather}
-                            locale={locale}
-                            conditionLabels={weatherCopy.conditionLabels}
-                          />
-
-                          <p className="text-sm text-slate-700">
-                            {formatFairDateRange(
-                              fair.startDate,
-                              fair.endDate,
-                              locale,
-                              copy.dateToBeConfirmed,
-                            )}
-                          </p>
-
-                          {fair.organizerName ? (
-                            <p className="text-sm text-slate-600">
-                              {copy.organizer}: {fair.organizerName}
-                            </p>
-                          ) : null}
-                        </div>
-
-                        <div className="flex shrink-0 flex-wrap gap-2 md:justify-end">
+                      <div
+                        className={
+                          titleImageUrl
+                            ? "flex flex-col gap-5 md:flex-row md:items-start"
+                            : ""
+                        }
+                      >
+                        {titleImageUrl ? (
                           <Link
                             href={detailPath}
-                            className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                            className="relative block h-44 overflow-hidden rounded-2xl border border-slate-100 bg-slate-100 sm:h-52 md:aspect-video md:h-auto md:w-[260px] md:shrink-0 lg:w-[280px]"
                           >
-                            {copy.details}
+                            <Image
+                              src={titleImageUrl}
+                              alt={`${formatFairTitleForDisplay(
+                                fair.name,
+                                locale,
+                              )} title image`}
+                              fill
+                              sizes="(min-width: 1024px) 280px, (min-width: 768px) 260px, 100vw"
+                              className="object-cover transition duration-300 hover:scale-[1.02]"
+                            />
                           </Link>
+                        ) : null}
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-start md:justify-between">
+                            <div className="min-w-0 flex-1 space-y-2">
+                              <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
+                                <Link
+                                  href={detailPath}
+                                  className="hover:text-blue-700"
+                                >
+                                  {formatFairTitleForDisplay(fair.name, locale)}
+                                </Link>
+                              </h3>
+
+                              <FairBadgeStrip
+                                badges={fair.badges}
+                                labels={copy.badges}
+                                maxCount={3}
+                                hideProminentLifecycleBadges
+                              />
+
+                              <p className="text-sm font-medium text-slate-600">
+                                {fair.city}
+                                {fair.city && fair.countryISO ? ", " : ""}
+                                {fair.countryISO}
+                              </p>
+
+                              <WeatherSummary
+                                weather={weather}
+                                locale={locale}
+                                conditionLabels={weatherCopy.conditionLabels}
+                              />
+
+                              <p className="text-sm text-slate-700">
+                                {formatFairDateRange(
+                                  fair.startDate,
+                                  fair.endDate,
+                                  locale,
+                                  copy.dateToBeConfirmed,
+                                )}
+                              </p>
+
+                              {fair.organizerName ? (
+                                <p className="text-sm text-slate-600">
+                                  {copy.organizer}: {fair.organizerName}
+                                </p>
+                              ) : null}
+                            </div>
+
+                            <div className="flex shrink-0 flex-wrap gap-2 md:justify-end">
+                              <Link
+                                href={detailPath}
+                                className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                              >
+                                {copy.details}
+                              </Link>
+                            </div>
+                          </div>
+
+                          {categoryIds.length > 0 ? (
+                            <div className="mt-4 flex flex-wrap gap-2">
+                              {categoryIds.map((categoryId) => (
+                                <span
+                                  key={categoryId}
+                                  className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700"
+                                >
+                                  {categoryLabelById(
+                                    categoryId,
+                                    categoryTreeData,
+                                    locale,
+                                  )}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
                         </div>
                       </div>
-
-                      {categoryIds.length > 0 ? (
-                        <div className="mt-4 flex flex-wrap gap-2">
-                          {categoryIds.map((categoryId) => (
-                            <span
-                              key={categoryId}
-                              className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700"
-                            >
-                              {categoryLabelById(
-                                categoryId,
-                                categoryTreeData,
-                                locale,
-                              )}
-                            </span>
-                          ))}
-                        </div>
-                      ) : null}
                     </article>
                   );
                 })}
