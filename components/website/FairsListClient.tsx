@@ -65,7 +65,7 @@ type FairsListClientProps = {
 };
 
 const TECHNICAL_CATEGORY_KEYS = new Set(["imported"]);
-const MAX_VISIBLE_CARD_CATEGORIES = 4;
+const MAX_VISIBLE_CARD_CATEGORIES = 6;
 
 function categoryKey(categoryId: string): string {
   return categoryId.trim().toLowerCase();
@@ -1102,7 +1102,7 @@ export default function FairsListClient({
                           </Link>
                         ) : null}
 
-                        <div className="min-w-0 space-y-2">
+                        <div className="min-w-0 space-y-3">
                           <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
                             <Link
                               href={detailPath}
@@ -1112,42 +1112,50 @@ export default function FairsListClient({
                             </Link>
                           </h3>
 
-                          <FairBadgeStrip
-                            badges={fair.badges}
-                            labels={copy.badges}
-                            maxCount={3}
-                            hideProminentLifecycleBadges
-                          />
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                              <FairBadgeStrip
+                                badges={fair.badges}
+                                labels={copy.badges}
+                                maxCount={3}
+                                hideProminentLifecycleBadges
+                              />
 
-                          <p className="text-sm font-medium text-slate-600">
-                            {fair.city}
-                            {fair.city && fair.countryISO ? ", " : ""}
-                            {fair.countryISO}
-                          </p>
+                              <span className="text-sm font-medium text-slate-600">
+                                {fair.city}
+                                {fair.city && fair.countryISO ? ", " : ""}
+                                {fair.countryISO}
+                              </span>
 
-                          <WeatherSummary
-                            weather={weather}
-                            locale={locale}
-                            conditionLabels={weatherCopy.conditionLabels}
-                          />
+                              <div className="-mt-2">
+                                <WeatherSummary
+                                  weather={weather}
+                                  locale={locale}
+                                  conditionLabels={weatherCopy.conditionLabels}
+                                />
+                              </div>
+                            </div>
 
-                          <p className="text-sm text-slate-700">
-                            {formatFairDateRange(
-                              fair.startDate,
-                              fair.endDate,
-                              locale,
-                              copy.dateToBeConfirmed,
-                            )}
-                          </p>
+                            <div className="grid gap-x-5 gap-y-1 text-sm text-slate-600 sm:grid-cols-2">
+                              <p className="text-slate-700">
+                                {formatFairDateRange(
+                                  fair.startDate,
+                                  fair.endDate,
+                                  locale,
+                                  copy.dateToBeConfirmed,
+                                )}
+                              </p>
 
-                          {fair.organizerName ? (
-                            <p className="text-sm text-slate-600">
-                              {copy.organizer}: {fair.organizerName}
-                            </p>
-                          ) : null}
+                              {fair.organizerName ? (
+                                <p>
+                                  {copy.organizer}: {fair.organizerName}
+                                </p>
+                              ) : null}
+                            </div>
+                          </div>
 
                           {visibleCategoryIds.length > 0 ? (
-                            <div className="flex flex-wrap gap-1.5 pt-2">
+                            <div className="flex flex-wrap gap-1.5">
                               {visibleCategoryIds.map((categoryId) => (
                                 <span
                                   key={categoryId}
