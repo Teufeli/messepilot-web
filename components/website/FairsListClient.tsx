@@ -28,6 +28,15 @@ import {
 } from "@/lib/website/fairLocations";
 import { isPastFair, todayDateKey } from "@/lib/website/fairDateFilters";
 import { FAIR_SEARCH_QUERY_PARAM } from "@/lib/website/fairSearchParams";
+import {
+  FAIR_PAGE_QUERY_PARAM,
+  FAIR_PAGE_SIZE_OPTIONS,
+  FAIR_PAGE_SIZE_QUERY_PARAM,
+  DEFAULT_FAIR_PAGE_SIZE,
+  normalizeFairPage,
+  normalizeFairPageSize,
+  type FairPageSize,
+} from "@/lib/website/fairPagination";
 import type { FairPageCopy } from "@/lib/website/fairCopy";
 import type { FairDataReportCopy } from "@/lib/website/fairCopy";
 import type { PublicWeatherSnapshotsByLocationKey } from "@/lib/website/weather";
@@ -61,11 +70,87 @@ type FairsListClientProps = {
   reportCopy: FairDataReportCopy;
   initialLocationKey?: string | null;
   initialSearchQuery?: string;
+  initialPage?: number;
+  initialPageSize?: FairPageSize;
   weatherSnapshots: PublicWeatherSnapshotsByLocationKey;
 };
 
 const TECHNICAL_CATEGORY_KEYS = new Set(["imported"]);
 const MAX_VISIBLE_CARD_CATEGORIES = 6;
+
+type PaginationCopy = {
+  perPage: string;
+  previous: string;
+  next: string;
+  page: string;
+  of: string;
+};
+
+const paginationCopyByLanguage: Record<string, PaginationCopy> = {
+  en: {
+    perPage: "Per page",
+    previous: "Previous page",
+    next: "Next page",
+    page: "Page",
+    of: "of",
+  },
+  de: {
+    perPage: "Pro Seite",
+    previous: "Vorherige Seite",
+    next: "Nächste Seite",
+    page: "Seite",
+    of: "von",
+  },
+  ja: {
+    perPage: "1ページ",
+    previous: "前へ",
+    next: "次へ",
+    page: "ページ",
+    of: "/",
+  },
+  es: {
+    perPage: "Por página",
+    previous: "Anterior",
+    next: "Siguiente",
+    page: "Página",
+    of: "de",
+  },
+  fr: {
+    perPage: "Par page",
+    previous: "Précédent",
+    next: "Suivant",
+    page: "Page",
+    of: "sur",
+  },
+  it: {
+    perPage: "Per pagina",
+    previous: "Precedente",
+    next: "Successiva",
+    page: "Pagina",
+    of: "di",
+  },
+  bs: {
+    perPage: "Po stranici",
+    previous: "Prethodna",
+    next: "Sljedeća",
+    page: "Stranica",
+    of: "od",
+  },
+  hr: {
+    perPage: "Po stranici",
+    previous: "Prethodna",
+    next: "Sljedeća",
+    page: "Stranica",
+    of: "od",
+  },
+  hi: {
+    perPage: "प्रति पेज",
+    previous: "पिछला",
+    next: "अगला",
+    page: "पेज",
+    of: "में से",
+  },
+};
 
 function categoryKey(categoryId: string): string {
   return categoryId.trim().toLowerCase();
@@ -73,6 +158,15 @@ function categoryKey(categoryId: string): string {
 
 function normalizeLocaleKey(locale: string): string {
   return locale.trim().replaceAll("_", "-").toLowerCase();
+}
+
+function paginationCopyForLocale(locale: string): PaginationCopy {
+  const language = normalizeLocaleKey(locale).split("-")[0];
+  return paginationCopyByLanguage[language] ?? paginationCopyByLanguage.en;
+}
+
+function fairCountLabel(count: number, copy: FairPageCopy): string {
+  return `${count} ${count === 1 ? copy.fairSingular : copy.fairPlural}`;
 }
 
 function categoryLabelFallbackCodes(locale: string): string[] {
@@ -654,12 +748,18 @@ export default function FairsListClient({
   reportCopy,
   initialLocationKey,
   initialSearchQuery = "",
+  initialPage = 1,
+  initialPageSize = DEFAULT_FAIR_PAGE_SIZE,
   weatherSnapshots,
 }: FairsListClientProps) {
   const pathname = usePathname();
   const [sortOrder, setSortOrder] = useState<SortOrder>("soonest");
   const [hidePastFairs, setHidePastFairs] = useState(true);
   const [searchQuery, setSearchQuery] = useState(() => initialSearchQuery.trim());
+  const [currentPage, setCurrentPage] = useState(() => normalizeFairPage(initialPage));
+  const [pageSize, setPageSize] = useState<FairPageSize>(() =>
+    normalizeFairPageSize(initialPageSize),
+  );
   const [selectedLocationKey, setSelectedLocationKey] = useState<string | null>(
     () => normalizeLocationQueryKey(initialLocationKey),
   );
@@ -667,17 +767,24 @@ export default function FairsListClient({
   const [openCategoryIds, setOpenCategoryIds] = useState<string[]>([]);
   const currentTodayKey = useMemo(() => todayDateKey(), []);
   const weatherCopy = useMemo(() => getWeatherCopy(locale), [locale]);
+  const paginationCopy = useMemo(() => paginationCopyForLocale(locale), [locale]);
   const activeSearchQuery = searchQuery.trim();
 
   const replaceFilterUrl = ({
     locationKey = selectedLocationKey,
     nextSearchQuery = searchQuery,
+    nextPage = currentPage,
+    nextPageSize = pageSize,
   }: {
     locationKey?: string | null;
     nextSearchQuery?: string;
+    nextPage?: number;
+    nextPageSize?: FairPageSize;
   }) => {
     const params = new URLSearchParams(window.location.search);
     const normalizedSearchQuery = nextSearchQuery.trim();
+    const normalizedPage = normalizeFairPage(nextPage);
+    const normalizedPageSize = normalizeFairPageSize(nextPageSize);
 
     if (normalizedSearchQuery) {
       params.set(FAIR_SEARCH_QUERY_PARAM, normalizedSearchQuery);
@@ -690,6 +797,9 @@ export default function FairsListClient({
     } else {
       params.delete("location");
     }
+
+    params.set(FAIR_PAGE_QUERY_PARAM, String(normalizedPage));
+    params.set(FAIR_PAGE_SIZE_QUERY_PARAM, String(normalizedPageSize));
 
     const queryString = params.toString();
     window.history.replaceState(
@@ -767,10 +877,28 @@ export default function FairsListClient({
     ],
   );
 
-  const groupedFairs = useMemo(
-    () => groupFairsByMonth(visibleFairs, locale, copy.dateToBeConfirmed),
-    [copy.dateToBeConfirmed, locale, visibleFairs],
+  const totalPages = Math.max(1, Math.ceil(visibleFairs.length / pageSize));
+  const activePage = Math.min(currentPage, totalPages);
+  const pageStartIndex = visibleFairs.length === 0 ? 0 : (activePage - 1) * pageSize;
+  const pageEndIndex = Math.min(pageStartIndex + pageSize, visibleFairs.length);
+  const paginatedFairs = useMemo(
+    () => visibleFairs.slice(pageStartIndex, pageEndIndex),
+    [pageEndIndex, pageStartIndex, visibleFairs],
   );
+
+  const groupedFairs = useMemo(
+    () => groupFairsByMonth(paginatedFairs, locale, copy.dateToBeConfirmed),
+    [copy.dateToBeConfirmed, locale, paginatedFairs],
+  );
+
+  const shouldShowPaginationControls = visibleFairs.length > pageSize;
+  const visibleRangeLabel =
+    visibleFairs.length > 0
+      ? `${pageStartIndex + 1}–${pageEndIndex} ${paginationCopy.of} ${fairCountLabel(
+          visibleFairs.length,
+          copy,
+        )}`
+      : "";
 
   const hasSearchOrCategoryFilter =
     tokens.length > 0 || selectedCategoryIds.length > 0 || Boolean(selectedLocationKey);
@@ -780,19 +908,50 @@ export default function FairsListClient({
   const fairDetailPath = (fairId: string) =>
     locale === "en" ? `/fairs/${fairId}` : `/${locale}/fairs/${fairId}`;
 
+  const setPage = (nextPage: number) => {
+    const normalizedPage = Math.min(Math.max(1, normalizeFairPage(nextPage)), totalPages);
+    setCurrentPage(normalizedPage);
+    replaceFilterUrl({ nextPage: normalizedPage });
+  };
+
+  const resetPageForListChange = () => {
+    setCurrentPage(1);
+    replaceFilterUrl({ nextPage: 1 });
+  };
+
+  const updatePageSize = (nextPageSize: number) => {
+    const normalizedPageSize = normalizeFairPageSize(nextPageSize);
+    setPageSize(normalizedPageSize);
+    setCurrentPage(1);
+    replaceFilterUrl({ nextPage: 1, nextPageSize: normalizedPageSize });
+  };
+
+  const updateSortOrder = (nextSortOrder: SortOrder) => {
+    setSortOrder(nextSortOrder);
+    resetPageForListChange();
+  };
+
+  const updateHidePastFairs = (nextHidePastFairs: boolean) => {
+    setHidePastFairs(nextHidePastFairs);
+    resetPageForListChange();
+  };
+
   const clearLocationFilterState = () => {
     setSelectedLocationKey(null);
-    replaceFilterUrl({ locationKey: null });
+    setCurrentPage(1);
+    replaceFilterUrl({ locationKey: null, nextPage: 1 });
   };
 
   const clearSearchFilter = () => {
     setSearchQuery("");
-    replaceFilterUrl({ nextSearchQuery: "" });
+    setCurrentPage(1);
+    replaceFilterUrl({ nextSearchQuery: "", nextPage: 1 });
   };
 
   const updateSearchQuery = (nextSearchQuery: string) => {
     setSearchQuery(nextSearchQuery);
-    replaceFilterUrl({ nextSearchQuery });
+    setCurrentPage(1);
+    replaceFilterUrl({ nextSearchQuery, nextPage: 1 });
   };
 
   const toggleCategory = (categoryId: string) => {
@@ -801,6 +960,7 @@ export default function FairsListClient({
         ? currentCategoryIds.filter((currentCategoryId) => currentCategoryId !== categoryId)
         : [...currentCategoryIds, categoryId],
     );
+    resetPageForListChange();
   };
 
   const toggleCategoryOpen = (categoryId: string) => {
@@ -816,14 +976,16 @@ export default function FairsListClient({
     setSelectedCategoryIds([]);
     setSelectedLocationKey(null);
     setHidePastFairs(true);
-    replaceFilterUrl({ locationKey: null, nextSearchQuery: "" });
+    setCurrentPage(1);
+    replaceFilterUrl({ locationKey: null, nextSearchQuery: "", nextPage: 1 });
   };
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const normalizedSearchQuery = searchQuery.trim();
     setSearchQuery(normalizedSearchQuery);
-    replaceFilterUrl({ nextSearchQuery: normalizedSearchQuery });
+    setCurrentPage(1);
+    replaceFilterUrl({ nextSearchQuery: normalizedSearchQuery, nextPage: 1 });
   };
 
   return (
@@ -846,7 +1008,7 @@ export default function FairsListClient({
               <input
                 type="checkbox"
                 checked={hidePastFairs}
-                onChange={(event) => setHidePastFairs(event.target.checked)}
+                onChange={(event) => updateHidePastFairs(event.target.checked)}
                 className="h-4 w-4 accent-slate-950"
               />
               {copy.hidePastFairs}
@@ -855,7 +1017,7 @@ export default function FairsListClient({
             <div className="inline-flex min-h-11 rounded-full border border-slate-200 bg-white p-1 text-sm font-semibold shadow-sm">
               <button
                 type="button"
-                onClick={() => setSortOrder("soonest")}
+                onClick={() => updateSortOrder("soonest")}
                 className={[
                   "rounded-full px-3 py-1.5 transition",
                   sortOrder === "soonest"
@@ -867,7 +1029,7 @@ export default function FairsListClient({
               </button>
               <button
                 type="button"
-                onClick={() => setSortOrder("latest")}
+                onClick={() => updateSortOrder("latest")}
                 className={[
                   "rounded-full px-3 py-1.5 transition",
                   sortOrder === "latest"
@@ -1000,18 +1162,43 @@ export default function FairsListClient({
       </p>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm font-medium text-slate-600">
-          {visibleFairs.length}{" "}
-          {visibleFairs.length === 1 ? copy.fairSingular : copy.fairPlural}
-        </p>
+        <div className="space-y-0.5">
+          <p className="text-sm font-medium text-slate-600">
+            {fairCountLabel(visibleFairs.length, copy)}
+          </p>
+          {visibleRangeLabel ? (
+            <p className="text-xs font-medium text-slate-500">
+              {visibleRangeLabel}
+            </p>
+          ) : null}
+        </div>
 
-        {groupedFairs.length > 0 ? (
-          <MissingFairSuggestionReport
-            copy={reportCopy}
-            locale={locale}
-            initialFairName={searchQuery}
-          />
-        ) : null}
+        <div className="flex flex-wrap items-center gap-3">
+          {visibleFairs.length > 0 ? (
+            <label className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm">
+              <span>{paginationCopy.perPage}</span>
+              <select
+                value={pageSize}
+                onChange={(event) => updatePageSize(Number(event.target.value))}
+                className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-semibold text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+              >
+                {FAIR_PAGE_SIZE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
+          {groupedFairs.length > 0 ? (
+            <MissingFairSuggestionReport
+              copy={reportCopy}
+              locale={locale}
+              initialFairName={searchQuery}
+            />
+          ) : null}
+        </div>
       </div>
 
       {groupedFairs.length === 0 ? (
@@ -1195,6 +1382,37 @@ export default function FairsListClient({
           ))}
         </div>
       )}
+
+      {shouldShowPaginationControls ? (
+        <nav
+          className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white/85 p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+          aria-label={`${copy.fairPlural} ${paginationCopy.page}`}
+        >
+          <p className="text-sm font-medium text-slate-600">
+            {visibleRangeLabel} · {paginationCopy.page} {activePage}{" "}
+            {paginationCopy.of} {totalPages}
+          </p>
+
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+            <button
+              type="button"
+              onClick={() => setPage(activePage - 1)}
+              disabled={activePage <= 1}
+              className="inline-flex min-h-10 items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {paginationCopy.previous}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage(activePage + 1)}
+              disabled={activePage >= totalPages}
+              className="inline-flex min-h-10 items-center justify-center rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {paginationCopy.next}
+            </button>
+          </div>
+        </nav>
+      ) : null}
     </div>
   );
 }
