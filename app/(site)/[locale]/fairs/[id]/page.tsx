@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -15,6 +16,7 @@ import { WeatherDetailPanel } from "@/components/website/WeatherSummary";
 import {
   formatFairDateRange,
   formatFairTitleForDisplay,
+  fairDetailTitleImageUrl,
   getPublicFairCategories,
   getPublishedFairById,
   localizedFairDescription,
@@ -84,6 +86,7 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
 
   const fairDescription = localizedFairDescription(fair, locale);
   const fairDisplayTitle = formatFairTitleForDisplay(fair.name, locale);
+  const titleImageUrl = fairDetailTitleImageUrl(fair);
   const weatherCopy = getWeatherCopy(locale);
   const locationKey = fairLocationKey(fair);
   const weatherSnapshots = await getPublicWeatherSnapshotsByLocationKeys([locationKey]);
@@ -102,6 +105,19 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
         >
           ← {copy.backToFairs}
         </Link>
+
+        {titleImageUrl ? (
+          <div className="relative mt-6 aspect-video overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-sm">
+            <Image
+              src={titleImageUrl}
+              alt={`${fairDisplayTitle} title image`}
+              fill
+              priority
+              sizes="(min-width: 1024px) 960px, 100vw"
+              className="object-cover"
+            />
+          </div>
+        ) : null}
 
         <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4">

@@ -39,6 +39,21 @@ export type WebsiteFairBadge = {
   eventId?: string;
 };
 
+export type WebsiteFairTitleImageUrls = {
+  thumb?: string;
+  app?: string;
+  web?: string;
+};
+
+export type WebsiteFairTitleImage = {
+  status: "approved";
+  urls: WebsiteFairTitleImageUrls;
+  assetVersion?: number;
+  contentHash?: string;
+  updatedAt: Date | null;
+  metadata?: Record<string, unknown>;
+};
+
 export type WebsiteFairChangeEvent = {
   id: string;
   fairId: string;
@@ -79,6 +94,7 @@ export type WebsiteFair = {
   recentImportantChangeUntil: Date | null;
   changeEvents: WebsiteFairChangeEvent[];
   badges: WebsiteFairBadge[];
+  titleImage?: WebsiteFairTitleImage;
 };
 
 export type WebsiteFairLocalizedLocationLabels = {
@@ -122,6 +138,14 @@ type FirestoreFairDocument = {
   changeSummary?: string;
   recentImportantChangeUntil?: Timestamp;
   description?: string;
+  titleImage?: {
+    status?: string;
+    urls?: Record<string, unknown>;
+    assetVersion?: number;
+    contentHash?: string;
+    updatedAt?: Timestamp;
+    metadata?: Record<string, unknown>;
+  };
   localized?: Record<string, {
     city?: string;
     cityDisplayName?: string;
@@ -238,6 +262,76 @@ export function formatFairTitleForDisplay(title: string, locale?: string): strin
 
 function finiteNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function publicImageUrl(value: unknown): string | undefined {
+  const text = normalizedText(value);
+  if (!text) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(text);
+    return url.protocol === "https:" || url.protocol === "http:" ? text : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function publicFairTitleImage(
+  titleImage: FirestoreFairDocument["titleImage"],
+): WebsiteFairTitleImage | undefined {
+  if (!titleImage || titleImage.status !== "approved") {
+    return undefined;
+  }
+
+  const urls: WebsiteFairTitleImageUrls = {
+    thumb: publicImageUrl(titleImage.urls?.thumb),
+    app: publicImageUrl(titleImage.urls?.app),
+    web: publicImageUrl(titleImage.urls?.web),
+  };
+
+  if (!urls.thumb && !urls.app && !urls.web) {
+    return undefined;
+  }
+
+  return {
+    status: "approved",
+    urls,
+    assetVersion: finiteNumber(titleImage.assetVersion),
+    contentHash: normalizedText(titleImage.contentHash),
+    updatedAt: toDate(titleImage.updatedAt),
+    metadata:
+      titleImage.metadata && typeof titleImage.metadata === "object"
+        ? titleImage.metadata
+        : undefined,
+  };
+}
+
+function titleImageUrl(
+  titleImage: WebsiteFairTitleImage | undefined,
+  variants: Array<keyof WebsiteFairTitleImageUrls>,
+): string | undefined {
+  if (!titleImage || titleImage.status !== "approved") {
+    return undefined;
+  }
+
+  for (const variant of variants) {
+    const url = titleImage.urls[variant];
+    if (url) {
+      return url;
+    }
+  }
+
+  return undefined;
+}
+
+export function fairCardTitleImageUrl(fair: WebsiteFair): string | undefined {
+  return titleImageUrl(fair.titleImage, ["thumb", "app", "web"]);
+}
+
+export function fairDetailTitleImageUrl(fair: WebsiteFair): string | undefined {
+  return titleImageUrl(fair.titleImage, ["web", "app", "thumb"]);
 }
 
 function normalizeLocaleKey(value: string): string {
@@ -417,6 +511,7 @@ function mapFairDocument(documentId: string, data: FirestoreFairDocument): Websi
     recentImportantChangeUntil: toDate(data.recentImportantChangeUntil),
     changeEvents: [],
     badges: [],
+    titleImage: publicFairTitleImage(data.titleImage),
   };
 }
 

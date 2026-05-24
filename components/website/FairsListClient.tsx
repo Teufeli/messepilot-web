@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type FormEvent, useMemo, useState } from "react";
@@ -15,6 +16,7 @@ import { WeatherSummary } from "@/components/website/WeatherSummary";
 import {
   formatFairTitleForDisplay,
   formatFairDateRange,
+  fairCardTitleImageUrl,
   type WebsiteFair,
   type WebsiteFairCategory,
 } from "@/lib/fairs";
@@ -1053,6 +1055,8 @@ export default function FairsListClient({
                     fair.categoryIds,
                     categoryTreeData.categoriesByKey,
                   );
+                  const titleImageUrl = fairCardTitleImageUrl(fair);
+                  const detailPath = fairDetailPath(fair.id);
 
                   return (
                     <article
@@ -1066,11 +1070,29 @@ export default function FairsListClient({
                         className="mb-5"
                       />
 
+                      {titleImageUrl ? (
+                        <Link
+                          href={detailPath}
+                          className="relative mb-5 block aspect-video overflow-hidden rounded-2xl border border-slate-100 bg-slate-100"
+                        >
+                          <Image
+                            src={titleImageUrl}
+                            alt={`${formatFairTitleForDisplay(
+                              fair.name,
+                              locale,
+                            )} title image`}
+                            fill
+                            sizes="(min-width: 768px) 720px, 100vw"
+                            className="object-cover transition duration-300 hover:scale-[1.02]"
+                          />
+                        </Link>
+                      ) : null}
+
                       <div className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-start md:justify-between">
                         <div className="min-w-0 flex-1 space-y-2">
                           <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
                             <Link
-                              href={fairDetailPath(fair.id)}
+                              href={detailPath}
                               className="hover:text-blue-700"
                             >
                               {formatFairTitleForDisplay(fair.name, locale)}
@@ -1114,7 +1136,7 @@ export default function FairsListClient({
 
                         <div className="flex shrink-0 flex-wrap gap-2 md:justify-end">
                           <Link
-                            href={fairDetailPath(fair.id)}
+                            href={detailPath}
                             className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
                           >
                             {copy.details}
