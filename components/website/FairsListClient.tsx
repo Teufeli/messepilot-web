@@ -1154,27 +1154,6 @@ export default function FairsListClient({
                             </div>
                           </div>
 
-                          {visibleCategoryIds.length > 0 ? (
-                            <div className="flex flex-wrap gap-1.5">
-                              {visibleCategoryIds.map((categoryId) => (
-                                <span
-                                  key={categoryId}
-                                  className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700"
-                                >
-                                  {categoryLabelById(
-                                    categoryId,
-                                    categoryTreeData,
-                                    locale,
-                                  )}
-                                </span>
-                              ))}
-                              {hiddenCategoryCount > 0 ? (
-                                <span className="rounded-full bg-slate-50 px-2.5 py-0.5 text-[11px] font-semibold text-slate-500">
-                                  +{hiddenCategoryCount}
-                                </span>
-                              ) : null}
-                            </div>
-                          ) : null}
                         </div>
 
                         <div className="flex shrink-0 justify-start md:min-w-[124px] md:justify-end">
@@ -1186,6 +1165,28 @@ export default function FairsListClient({
                           </Link>
                         </div>
                       </div>
+
+                      {visibleCategoryIds.length > 0 ? (
+                        <div className="mt-4 flex flex-wrap gap-1.5 border-t border-slate-100 pt-3">
+                          {visibleCategoryIds.map((categoryId) => (
+                            <span
+                              key={categoryId}
+                              className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-700"
+                            >
+                              {categoryLabelById(
+                                categoryId,
+                                categoryTreeData,
+                                locale,
+                              )}
+                            </span>
+                          ))}
+                          {hiddenCategoryCount > 0 ? (
+                            <span className="rounded-full bg-slate-50 px-2.5 py-0.5 text-[11px] font-semibold text-slate-500">
+                              +{hiddenCategoryCount}
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </article>
                   );
                 })}
