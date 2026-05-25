@@ -22,6 +22,33 @@ export type FairLocationGroup = {
 
 const locationKeyPattern = /^[A-Z0-9]{2,3}:[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+const canonicalCityAliasesByCountry: Record<string, Record<string, string>> = {
+  CN: {
+    beijing: "beijing",
+    peking: "beijing",
+  },
+  DE: {
+    cologne: "cologne",
+    koln: "cologne",
+    koeln: "cologne",
+    munchen: "munich",
+    munich: "munich",
+    muenchen: "munich",
+  },
+  SG: {
+    singapore: "singapore",
+    singapur: "singapore",
+  },
+  VN: {
+    hcmc: "ho-chi-minh-city",
+    "ho-chi-minh": "ho-chi-minh-city",
+    "ho-chi-minh-city": "ho-chi-minh-city",
+    hochiminh: "ho-chi-minh-city",
+    "ho-chi-minh-stadt": "ho-chi-minh-city",
+    saigon: "ho-chi-minh-city",
+  },
+};
+
 function normalizedText(value: unknown): string | undefined {
   if (typeof value !== "string") {
     return undefined;
@@ -55,10 +82,15 @@ function finiteCoordinate(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
+function canonicalCitySlug(countryISO: string, city: string): string {
+  const slug = locationSlug(city);
+  return canonicalCityAliasesByCountry[countryISO]?.[slug] ?? slug;
+}
+
 export function fairLocationKey(fair: WebsiteFair): string | null {
   const city = normalizedText(fair.city);
   const countryISO = normalizedText(fair.countryISO)?.toUpperCase();
-  const slug = city ? locationSlug(city) : "";
+  const slug = city && countryISO ? canonicalCitySlug(countryISO, city) : "";
 
   if (!city || !countryISO || !slug) {
     return null;
@@ -79,8 +111,11 @@ export function normalizeLocationQueryKey(value: unknown): string | null {
   }
 
   const [countryISO, citySlug] = parts;
+  const normalizedCountryISO = countryISO.toUpperCase();
   const normalized =
-    countryISO && citySlug ? `${countryISO.toUpperCase()}:${locationSlug(citySlug)}` : "";
+    normalizedCountryISO && citySlug
+      ? `${normalizedCountryISO}:${canonicalCitySlug(normalizedCountryISO, citySlug)}`
+      : "";
 
   return locationKeyPattern.test(normalized) ? normalized : null;
 }
