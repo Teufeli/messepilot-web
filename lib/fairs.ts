@@ -9,6 +9,7 @@ import {
   type Timestamp,
 } from "firebase/firestore/lite";
 import { db } from "./firebase";
+import { isCurrentOrFutureFair } from "./website/fairDateFilters";
 
 export type WebsiteFairLifecycleStatus =
   | "active"
@@ -54,6 +55,24 @@ export type WebsiteFairTitleImage = {
   metadata?: Record<string, unknown>;
 };
 
+export type WebsiteFairRatingDistribution = {
+  one: number;
+  two: number;
+  three: number;
+  four: number;
+  five: number;
+};
+
+export type WebsiteFairEngagementStats = {
+  ratingAverage: number | null;
+  ratingCount: number;
+  ratingSum: number | null;
+  ratingDistribution: WebsiteFairRatingDistribution;
+  favoriteCount: number;
+  notRelevantCount: number;
+  updatedAt: Date | null;
+};
+
 export type WebsiteFairChangeEvent = {
   id: string;
   fairId: string;
@@ -95,6 +114,7 @@ export type WebsiteFair = {
   changeEvents: WebsiteFairChangeEvent[];
   badges: WebsiteFairBadge[];
   titleImage?: WebsiteFairTitleImage;
+  engagementStats: WebsiteFairEngagementStats;
 };
 
 export type WebsiteFairLocalizedLocationLabels = {
@@ -146,6 +166,15 @@ type FirestoreFairDocument = {
     updatedAt?: Timestamp;
     metadata?: Record<string, unknown>;
   };
+  engagementStats?: {
+    ratingAverage?: number;
+    ratingCount?: number;
+    ratingSum?: number;
+    ratingDistribution?: FirestoreFairRatingDistributionDocument;
+    favoriteCount?: number;
+    notRelevantCount?: number;
+    updatedAt?: Timestamp;
+  };
   localized?: Record<string, {
     city?: string;
     cityDisplayName?: string;
@@ -155,6 +184,10 @@ type FirestoreFairDocument = {
     venueName?: string;
   }>;
 };
+
+type FirestoreFairRatingDistributionDocument = Partial<
+  Record<keyof WebsiteFairRatingDistribution, number>
+>;
 
 type FirestoreFairCategoryDocument = {
   id?: string;
@@ -262,6 +295,57 @@ export function formatFairTitleForDisplay(title: string, locale?: string): strin
 
 function finiteNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function publicCount(value: unknown): number {
+  const numberValue = finiteNumber(value);
+  return numberValue === undefined ? 0 : Math.max(0, Math.trunc(numberValue));
+}
+
+function publicRatingAverage(value: unknown, ratingCount: number): number | null {
+  const numberValue = finiteNumber(value);
+  if (ratingCount <= 0 || numberValue === undefined || numberValue < 1 || numberValue > 5) {
+    return null;
+  }
+
+  return numberValue;
+}
+
+function publicRatingSum(value: unknown, ratingCount: number): number | null {
+  const numberValue = finiteNumber(value);
+  if (ratingCount <= 0 || numberValue === undefined || numberValue < 0) {
+    return null;
+  }
+
+  return numberValue;
+}
+
+function publicRatingDistribution(
+  distribution: FirestoreFairRatingDistributionDocument | undefined,
+): WebsiteFairRatingDistribution {
+  return {
+    one: publicCount(distribution?.one),
+    two: publicCount(distribution?.two),
+    three: publicCount(distribution?.three),
+    four: publicCount(distribution?.four),
+    five: publicCount(distribution?.five),
+  };
+}
+
+function publicEngagementStats(
+  engagementStats: FirestoreFairDocument["engagementStats"],
+): WebsiteFairEngagementStats {
+  const ratingCount = publicCount(engagementStats?.ratingCount);
+
+  return {
+    ratingAverage: publicRatingAverage(engagementStats?.ratingAverage, ratingCount),
+    ratingCount,
+    ratingSum: publicRatingSum(engagementStats?.ratingSum, ratingCount),
+    ratingDistribution: publicRatingDistribution(engagementStats?.ratingDistribution),
+    favoriteCount: publicCount(engagementStats?.favoriteCount),
+    notRelevantCount: publicCount(engagementStats?.notRelevantCount),
+    updatedAt: toDate(engagementStats?.updatedAt),
+  };
 }
 
 function publicImageUrl(value: unknown): string | undefined {
@@ -512,6 +596,7 @@ function mapFairDocument(documentId: string, data: FirestoreFairDocument): Websi
     changeEvents: [],
     badges: [],
     titleImage: publicFairTitleImage(data.titleImage),
+    engagementStats: publicEngagementStats(data.engagementStats),
   };
 }
 
@@ -729,6 +814,10 @@ export async function getPublishedFairs(): Promise<WebsiteFair[]> {
       const data = document.data() as FirestoreFairDocument;
       return mapFairDocument(document.id, data);
     })
+    .filter(
+      (fair) =>
+        fair.lifecycleStatus !== "ended" && isCurrentOrFutureFair(fair),
+    )
     .sort(compareFairsByStartDate);
   const eventsByFairId = await getPublicChangeEventsByFairId(
     fairs.map((fair) => fair.id),

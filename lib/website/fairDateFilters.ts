@@ -10,8 +10,7 @@ export function todayDateKey() {
 }
 
 export function isPastFair(fair: WebsiteFair, currentTodayKey = todayDateKey()) {
-  const endDate = fair.endDate ?? fair.startDate;
-  return endDate ? utcDateKey(endDate) < currentTodayKey : false;
+  return fair.endDate ? utcDateKey(fair.endDate) < currentTodayKey : false;
 }
 
 export function isCurrentOrFutureFair(

@@ -12,6 +12,7 @@ import {
   ExistingFairCorrectionReport,
   FairDataDisclaimerNotice,
 } from "@/components/website/FairDataReports";
+import { FairRatingPanel } from "@/components/website/FairRating";
 import { WeatherDetailPanel } from "@/components/website/WeatherSummary";
 import {
   formatFairDateRange,
@@ -23,6 +24,7 @@ import {
 } from "@/lib/fairs";
 import { getPublicWeatherSnapshotsByLocationKeys } from "@/lib/weather";
 import { getFairCopy, getFairDataReportCopy } from "@/lib/website/fairCopy";
+import { isPastFair, todayDateKey } from "@/lib/website/fairDateFilters";
 import { fairLocationKey } from "@/lib/website/fairLocations";
 import { getWeatherCopy } from "@/lib/website/weatherCopy";
 
@@ -91,6 +93,8 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
   const locationKey = fairLocationKey(fair);
   const weatherSnapshots = await getPublicWeatherSnapshotsByLocationKeys([locationKey]);
   const weather = locationKey ? weatherSnapshots[locationKey] ?? null : null;
+  const isEndedFair =
+    fair.lifecycleStatus === "ended" || isPastFair(fair, todayDateKey());
   const mapURL =
     fair.latitude !== undefined && fair.longitude !== undefined
       ? `https://www.google.com/maps/search/?api=1&query=${fair.latitude},${fair.longitude}`
@@ -130,6 +134,12 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
             </h1>
 
             <FairLifecycleNotice fair={fair} copy={copy} />
+
+            {isEndedFair ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
+                {copy.endedNotice}
+              </div>
+            ) : null}
 
             <FairBadgeStrip
               badges={fair.badges}
@@ -253,6 +263,8 @@ export default async function FairDetailPage({ params }: FairDetailPageProps) {
         </div>
 
         <aside className="space-y-6 rounded-3xl border border-white/70 bg-white/90 p-8 shadow-sm backdrop-blur-xl">
+          <FairRatingPanel fair={fair} locale={locale} copy={copy} />
+
           <FairUpdatesPanel fair={fair} copy={copy} locale={locale} />
 
           <WeatherDetailPanel weather={weather} locale={locale} copy={weatherCopy} />

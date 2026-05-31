@@ -12,6 +12,7 @@ import {
   FairDataDisclaimerNotice,
   MissingFairSuggestionReport,
 } from "@/components/website/FairDataReports";
+import { FairRatingBadge } from "@/components/website/FairRating";
 import { WeatherSummary } from "@/components/website/WeatherSummary";
 import {
   formatFairTitleForDisplay,
@@ -26,7 +27,10 @@ import {
   locationLabelForKey,
   normalizeLocationQueryKey,
 } from "@/lib/website/fairLocations";
-import { isPastFair, todayDateKey } from "@/lib/website/fairDateFilters";
+import {
+  isCurrentOrFutureFair,
+  todayDateKey,
+} from "@/lib/website/fairDateFilters";
 import { FAIR_SEARCH_QUERY_PARAM } from "@/lib/website/fairSearchParams";
 import {
   FAIR_PAGE_QUERY_PARAM,
@@ -754,7 +758,6 @@ export default function FairsListClient({
 }: FairsListClientProps) {
   const pathname = usePathname();
   const [sortOrder, setSortOrder] = useState<SortOrder>("soonest");
-  const [hidePastFairs, setHidePastFairs] = useState(true);
   const [searchQuery, setSearchQuery] = useState(() => initialSearchQuery.trim());
   const [currentPage, setCurrentPage] = useState(() => normalizeFairPage(initialPage));
   const [pageSize, setPageSize] = useState<FairPageSize>(() =>
@@ -810,11 +813,8 @@ export default function FairsListClient({
   };
 
   const baseFairs = useMemo(
-    () =>
-      fairs.filter(
-        (fair) => !hidePastFairs || !isPastFair(fair, currentTodayKey),
-      ),
-    [currentTodayKey, fairs, hidePastFairs],
+    () => fairs.filter((fair) => isCurrentOrFutureFair(fair, currentTodayKey)),
+    [currentTodayKey, fairs],
   );
 
   const locationFilteredFairs = useMemo(
@@ -902,8 +902,7 @@ export default function FairsListClient({
 
   const hasSearchOrCategoryFilter =
     tokens.length > 0 || selectedCategoryIds.length > 0 || Boolean(selectedLocationKey);
-  const hasChangedFilters =
-    hasSearchOrCategoryFilter || hidePastFairs !== true;
+  const hasChangedFilters = hasSearchOrCategoryFilter;
 
   const fairDetailPath = (fairId: string) =>
     locale === "en" ? `/fairs/${fairId}` : `/${locale}/fairs/${fairId}`;
@@ -928,11 +927,6 @@ export default function FairsListClient({
 
   const updateSortOrder = (nextSortOrder: SortOrder) => {
     setSortOrder(nextSortOrder);
-    resetPageForListChange();
-  };
-
-  const updateHidePastFairs = (nextHidePastFairs: boolean) => {
-    setHidePastFairs(nextHidePastFairs);
     resetPageForListChange();
   };
 
@@ -975,7 +969,6 @@ export default function FairsListClient({
     setSearchQuery("");
     setSelectedCategoryIds([]);
     setSelectedLocationKey(null);
-    setHidePastFairs(true);
     setCurrentPage(1);
     replaceFilterUrl({ locationKey: null, nextSearchQuery: "", nextPage: 1 });
   };
@@ -1004,16 +997,6 @@ export default function FairsListClient({
           </form>
 
           <div className="flex flex-wrap items-center gap-3">
-            <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
-              <input
-                type="checkbox"
-                checked={hidePastFairs}
-                onChange={(event) => updateHidePastFairs(event.target.checked)}
-                className="h-4 w-4 accent-slate-950"
-              />
-              {copy.hidePastFairs}
-            </label>
-
             <div className="inline-flex min-h-11 rounded-full border border-slate-200 bg-white p-1 text-sm font-semibold shadow-sm">
               <button
                 type="button"
@@ -1313,6 +1296,12 @@ export default function FairsListClient({
                                 {fair.city && fair.countryISO ? ", " : ""}
                                 {fair.countryISO}
                               </span>
+
+                              <FairRatingBadge
+                                fair={fair}
+                                locale={locale}
+                                copy={copy}
+                              />
 
                               <div className="-mt-2">
                                 <WeatherSummary

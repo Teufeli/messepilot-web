@@ -130,6 +130,9 @@ export type FairPageCopy = {
   lastUpdated: string;
   categories: string;
   notAvailable: string;
+  rating: string;
+  ratings: string;
+  endedNotice: string;
   fairNotFoundTitle: string;
   detailNote: string;
   badges: BadgeLabels;
@@ -163,7 +166,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     hidePastFairs: "Hide past fairs",
     noFilterResultsTitle: "No fairs found",
     noUpcomingTitle: "No upcoming published fairs visible",
-    noUpcomingText: "Turn off Hide past fairs to show past published fairs too.",
+    noUpcomingText: "Past published fairs remain available via their direct links.",
     fairSingular: "fair",
     fairPlural: "fairs",
     dateToBeConfirmed: "DATE TO BE CONFIRMED",
@@ -182,6 +185,9 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     lastUpdated: "Last updated",
     categories: "Categories",
     notAvailable: "Not available",
+    rating: "Rating",
+    ratings: "ratings",
+    endedNotice: "This fair has already ended.",
     fairNotFoundTitle: "Fair not found | MessePilot",
     detailNote:
       "Messe details can change. Always verify travel, venue and business information on the official fair website before making decisions.",
@@ -255,7 +261,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     noFilterResultsTitle: "Keine Messen gefunden",
     noUpcomingTitle: "Keine kommenden veröffentlichten Messen sichtbar",
     noUpcomingText:
-      "Deaktiviere Vergangene Messen ausblenden, um vergangene veröffentlichte Messen anzuzeigen.",
+      "Vergangene veröffentlichte Messen bleiben über ihre Direktlinks erreichbar.",
     fairSingular: "Messe",
     fairPlural: "Messen",
     dateToBeConfirmed: "DATUM NOCH OFFEN",
@@ -274,6 +280,9 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     lastUpdated: "Zuletzt aktualisiert",
     categories: "Kategorien",
     notAvailable: "Nicht verfügbar",
+    rating: "Bewertung",
+    ratings: "Bewertungen",
+    endedNotice: "Diese Messe ist bereits beendet.",
     fairNotFoundTitle: "Messe nicht gefunden | MessePilot",
     detailNote:
       "Messedetails können sich ändern. Prüfe Reise-, Veranstaltungs- und Geschäftsinformationen vor Entscheidungen immer zusätzlich auf der offiziellen Messe-Website.",
@@ -347,7 +356,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     noFilterResultsTitle: "展示会が見つかりません",
     noUpcomingTitle: "表示できる今後の公開済み展示会はありません",
     noUpcomingText:
-      "過去の展示会も表示するには、過去の展示会を非表示をオフにしてください。",
+      "過去の公開済み展示会は直接リンクから引き続き表示できます。",
     fairSingular: "件",
     fairPlural: "件",
     dateToBeConfirmed: "日程未定",
@@ -366,6 +375,9 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     lastUpdated: "最終更新",
     categories: "カテゴリ",
     notAvailable: "未設定",
+    rating: "評価",
+    ratings: "件の評価",
+    endedNotice: "この展示会はすでに終了しています。",
     fairNotFoundTitle: "展示会が見つかりません | MessePilot",
     detailNote:
       "展示会情報は変更される場合があります。移動、会場、ビジネス上の判断を行う前に、必ず公式サイトでも確認してください。",
@@ -439,7 +451,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     noFilterResultsTitle: "No se encontraron ferias",
     noUpcomingTitle: "No hay ferias publicadas próximas visibles",
     noUpcomingText:
-      "Desactiva Ocultar ferias pasadas para mostrar también ferias publicadas anteriores.",
+      "Las ferias publicadas pasadas siguen disponibles mediante enlaces directos.",
     fairSingular: "feria",
     fairPlural: "ferias",
     dateToBeConfirmed: "FECHA POR CONFIRMAR",
@@ -458,6 +470,9 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     lastUpdated: "Última actualización",
     categories: "Categorías",
     notAvailable: "No disponible",
+    rating: "Valoración",
+    ratings: "valoraciones",
+    endedNotice: "Esta feria ya ha terminado.",
     fairNotFoundTitle: "Feria no encontrada | MessePilot",
     detailNote:
       "Los detalles de la feria pueden cambiar. Verifica siempre la información de viaje, recinto y negocio en el sitio web oficial antes de tomar decisiones.",
@@ -531,7 +546,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     noFilterResultsTitle: "Aucun salon trouvé",
     noUpcomingTitle: "Aucun salon publié à venir visible",
     noUpcomingText:
-      "Désactivez Masquer les salons passés pour afficher aussi les salons publiés passés.",
+      "Les salons publiés passés restent accessibles via leurs liens directs.",
     fairSingular: "salon",
     fairPlural: "salons",
     dateToBeConfirmed: "DATE À CONFIRMER",
@@ -550,6 +565,9 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     lastUpdated: "Dernière mise à jour",
     categories: "Catégories",
     notAvailable: "Non disponible",
+    rating: "Note",
+    ratings: "avis",
+    endedNotice: "Ce salon est déjà terminé.",
     fairNotFoundTitle: "Salon introuvable | MessePilot",
     detailNote:
       "Les détails du salon peuvent changer. Vérifiez toujours les informations de voyage, de lieu et d'affaires sur le site officiel avant de prendre une décision.",
@@ -623,7 +641,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     noFilterResultsTitle: "Nessuna fiera trovata",
     noUpcomingTitle: "Nessuna fiera pubblicata prossima visibile",
     noUpcomingText:
-      "Disattiva Nascondi fiere passate per mostrare anche le fiere pubblicate passate.",
+      "Le fiere pubblicate passate restano disponibili tramite link diretto.",
     fairSingular: "fiera",
     fairPlural: "fiere",
     dateToBeConfirmed: "DATA DA CONFERMARE",
@@ -642,6 +660,9 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     lastUpdated: "Ultimo aggiornamento",
     categories: "Categorie",
     notAvailable: "Non disponibile",
+    rating: "Valutazione",
+    ratings: "valutazioni",
+    endedNotice: "Questa fiera è già terminata.",
     fairNotFoundTitle: "Fiera non trovata | MessePilot",
     detailNote:
       "I dettagli della fiera possono cambiare. Verifica sempre le informazioni di viaggio, sede e business sul sito ufficiale prima di prendere decisioni.",
@@ -715,7 +736,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     noFilterResultsTitle: "Nema pronađenih sajmova",
     noUpcomingTitle: "Nema vidljivih nadolazećih objavljenih sajmova",
     noUpcomingText:
-      "Isključite Sakrij prošle sajmove da prikažete i prošle objavljene sajmove.",
+      "Prošli objavljeni sajmovi ostaju dostupni putem direktnih linkova.",
     fairSingular: "sajam",
     fairPlural: "sajmovi",
     dateToBeConfirmed: "DATUM JOŠ NIJE POTVRĐEN",
@@ -734,6 +755,9 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     lastUpdated: "Zadnje ažurirano",
     categories: "Kategorije",
     notAvailable: "Nije dostupno",
+    rating: "Ocjena",
+    ratings: "ocjena",
+    endedNotice: "Ovaj sajam je već završen.",
     fairNotFoundTitle: "Sajam nije pronađen | MessePilot",
     detailNote:
       "Detalji sajma se mogu promijeniti. Prije odluka uvijek provjerite putne, lokacijske i poslovne informacije na službenoj web stranici sajma.",
@@ -807,7 +831,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     noFilterResultsTitle: "Nema pronađenih sajmova",
     noUpcomingTitle: "Nema vidljivih nadolazećih objavljenih sajmova",
     noUpcomingText:
-      "Isključite Sakrij prošle sajmove kako biste prikazali i prošle objavljene sajmove.",
+      "Prošli objavljeni sajmovi ostaju dostupni putem izravnih poveznica.",
     fairSingular: "sajam",
     fairPlural: "sajmovi",
     dateToBeConfirmed: "DATUM JOŠ NIJE POTVRĐEN",
@@ -826,6 +850,9 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     lastUpdated: "Zadnje ažurirano",
     categories: "Kategorije",
     notAvailable: "Nije dostupno",
+    rating: "Ocjena",
+    ratings: "ocjena",
+    endedNotice: "Ovaj sajam je već završio.",
     fairNotFoundTitle: "Sajam nije pronađen | MessePilot",
     detailNote:
       "Detalji sajma mogu se promijeniti. Prije odluka uvijek provjerite putne, lokacijske i poslovne informacije na službenoj web-stranici sajma.",
@@ -899,7 +926,7 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     noFilterResultsTitle: "कोई मेला नहीं मिला",
     noUpcomingTitle: "कोई आने वाला प्रकाशित मेला दिखाई नहीं दे रहा",
     noUpcomingText:
-      "बीते प्रकाशित मेले दिखाने के लिए बीते मेले छिपाएं को बंद करें।",
+      "बीते प्रकाशित मेले सीधे लिंक से उपलब्ध रहेंगे।",
     fairSingular: "मेला",
     fairPlural: "मेले",
     dateToBeConfirmed: "तारीख की पुष्टि बाकी",
@@ -918,6 +945,9 @@ export const fairCopyByLocale: Record<WebsiteLocaleCode, FairPageCopy> = {
     lastUpdated: "अंतिम अपडेट",
     categories: "श्रेणियां",
     notAvailable: "उपलब्ध नहीं",
+    rating: "रेटिंग",
+    ratings: "रेटिंग",
+    endedNotice: "यह मेला पहले ही समाप्त हो चुका है।",
     fairNotFoundTitle: "मेला नहीं मिला | MessePilot",
     detailNote:
       "मेले के विवरण बदल सकते हैं। निर्णय लेने से पहले यात्रा, स्थल और व्यावसायिक जानकारी हमेशा आधिकारिक मेला वेबसाइट पर जांचें।",
