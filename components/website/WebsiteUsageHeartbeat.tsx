@@ -83,10 +83,9 @@ async function sendHeartbeat(
 export function WebsiteUsageHeartbeat() {
   const lastSentAtRef = useRef(0);
   const sessionIdRef = useRef<string | null>(null);
+  const intervalIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
-
     async function heartbeat(
       presenceStatus: UsageHeartbeatPayload["presenceStatus"],
       force = false,
@@ -116,32 +115,51 @@ export function WebsiteUsageHeartbeat() {
       }
     }
 
+    function stopActiveHeartbeatLoop() {
+      if (intervalIdRef.current === null) {
+        return;
+      }
+
+      window.clearInterval(intervalIdRef.current);
+      intervalIdRef.current = null;
+    }
+
+    function startActiveHeartbeatLoop() {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      stopActiveHeartbeatLoop();
+      intervalIdRef.current = window.setInterval(() => {
+        void heartbeat("active", true);
+      }, heartbeatIntervalMs);
+    }
+
     function handleVisibilityChange() {
       if (document.visibilityState === "visible") {
-        void heartbeat("active");
+        void heartbeat("active", true);
+        startActiveHeartbeatLoop();
       } else {
-        void heartbeat("inactive", true);
+        stopActiveHeartbeatLoop();
       }
     }
 
-    function handlePageHide() {
+    function handlePageExit() {
+      stopActiveHeartbeatLoop();
       void heartbeat("inactive", true);
     }
 
     void heartbeat("active", true);
+    startActiveHeartbeatLoop();
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("pagehide", handlePageHide);
-    const intervalId = window.setInterval(() => {
-      if (isMounted) {
-        void heartbeat("active");
-      }
-    }, heartbeatIntervalMs);
+    window.addEventListener("pagehide", handlePageExit);
+    window.addEventListener("beforeunload", handlePageExit);
 
     return () => {
-      isMounted = false;
-      window.clearInterval(intervalId);
+      stopActiveHeartbeatLoop();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("pagehide", handlePageExit);
+      window.removeEventListener("beforeunload", handlePageExit);
     };
   }, []);
 
