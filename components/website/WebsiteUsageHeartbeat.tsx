@@ -10,6 +10,7 @@ const heartbeatIntervalMs = 60_000;
 
 type UsageHeartbeatPayload = {
   platform: "web";
+  presenceStatus: "active" | "inactive";
   countryISO: string;
   appVersion: string;
   buildNumber: string;
@@ -60,7 +61,10 @@ function countryISO(): string {
   return region.length === 2 ? region : "unknown";
 }
 
-async function sendHeartbeat(sessionIdValue: string) {
+async function sendHeartbeat(
+  sessionIdValue: string,
+  presenceStatus: UsageHeartbeatPayload["presenceStatus"],
+) {
   const callable = httpsCallable<UsageHeartbeatPayload, UsageHeartbeatResult>(
     firebaseFunctions(),
     "recordUsageHeartbeat",
@@ -68,6 +72,7 @@ async function sendHeartbeat(sessionIdValue: string) {
 
   await callable({
     platform: "web",
+    presenceStatus,
     countryISO: countryISO(),
     appVersion: "website",
     buildNumber: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? "",
@@ -82,21 +87,30 @@ export function WebsiteUsageHeartbeat() {
   useEffect(() => {
     let isMounted = true;
 
-    async function heartbeat(force = false) {
-      if (document.visibilityState !== "visible") {
+    async function heartbeat(
+      presenceStatus: UsageHeartbeatPayload["presenceStatus"],
+      force = false,
+    ) {
+      if (presenceStatus === "active" && document.visibilityState !== "visible") {
         return;
       }
 
       const now = Date.now();
-      if (!force && now - lastSentAtRef.current < heartbeatIntervalMs) {
+      if (
+        presenceStatus === "active" &&
+        !force &&
+        now - lastSentAtRef.current < heartbeatIntervalMs
+      ) {
         return;
       }
 
-      lastSentAtRef.current = now;
+      if (presenceStatus === "active") {
+        lastSentAtRef.current = now;
+      }
       sessionIdRef.current ??= sessionId();
 
       try {
-        await sendHeartbeat(sessionIdRef.current);
+        await sendHeartbeat(sessionIdRef.current, presenceStatus);
       } catch {
         // Presence is best effort and must not affect the public website.
       }
@@ -104,15 +118,22 @@ export function WebsiteUsageHeartbeat() {
 
     function handleVisibilityChange() {
       if (document.visibilityState === "visible") {
-        void heartbeat();
+        void heartbeat("active");
+      } else {
+        void heartbeat("inactive", true);
       }
     }
 
-    void heartbeat(true);
+    function handlePageHide() {
+      void heartbeat("inactive", true);
+    }
+
+    void heartbeat("active", true);
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", handlePageHide);
     const intervalId = window.setInterval(() => {
       if (isMounted) {
-        void heartbeat();
+        void heartbeat("active");
       }
     }, heartbeatIntervalMs);
 
@@ -120,6 +141,7 @@ export function WebsiteUsageHeartbeat() {
       isMounted = false;
       window.clearInterval(intervalId);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", handlePageHide);
     };
   }, []);
 
