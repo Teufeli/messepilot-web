@@ -33,6 +33,16 @@ import {
 } from "@/lib/website/fairDateFilters";
 import { FAIR_SEARCH_QUERY_PARAM } from "@/lib/website/fairSearchParams";
 import {
+  DATA_REGION_ALL_ID,
+  DATA_REGION_VISIBLE_SELECTABLE_IDS,
+  FAIR_REGION_QUERY_PARAM,
+  dataRegionFilterLabel,
+  dataRegionIDForCountryISO,
+  dataRegionLabel,
+  normalizeDataRegionScopeID,
+  type DataRegionID,
+} from "@/lib/website/dataRegionContract";
+import {
   FAIR_PAGE_QUERY_PARAM,
   FAIR_PAGE_SIZE_OPTIONS,
   FAIR_PAGE_SIZE_QUERY_PARAM,
@@ -74,6 +84,7 @@ type FairsListClientProps = {
   reportCopy: FairDataReportCopy;
   initialLocationKey?: string | null;
   initialSearchQuery?: string;
+  initialDataRegionID?: DataRegionID;
   initialPage?: number;
   initialPageSize?: FairPageSize;
   weatherSnapshots: PublicWeatherSnapshotsByLocationKey;
@@ -81,6 +92,10 @@ type FairsListClientProps = {
 
 const TECHNICAL_CATEGORY_KEYS = new Set(["imported"]);
 const MAX_VISIBLE_CARD_CATEGORIES = 6;
+const DATA_REGION_FILTER_OPTIONS: DataRegionID[] = [
+  DATA_REGION_ALL_ID,
+  ...DATA_REGION_VISIBLE_SELECTABLE_IDS,
+];
 
 type PaginationCopy = {
   perPage: string;
@@ -752,6 +767,7 @@ export default function FairsListClient({
   reportCopy,
   initialLocationKey,
   initialSearchQuery = "",
+  initialDataRegionID = DATA_REGION_ALL_ID,
   initialPage = 1,
   initialPageSize = DEFAULT_FAIR_PAGE_SIZE,
   weatherSnapshots,
@@ -766,20 +782,27 @@ export default function FairsListClient({
   const [selectedLocationKey, setSelectedLocationKey] = useState<string | null>(
     () => normalizeLocationQueryKey(initialLocationKey),
   );
+  const [selectedDataRegionID, setSelectedDataRegionID] = useState<DataRegionID>(
+    () => normalizeDataRegionScopeID(initialDataRegionID),
+  );
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [openCategoryIds, setOpenCategoryIds] = useState<string[]>([]);
   const currentTodayKey = useMemo(() => todayDateKey(), []);
   const weatherCopy = useMemo(() => getWeatherCopy(locale), [locale]);
   const paginationCopy = useMemo(() => paginationCopyForLocale(locale), [locale]);
+  const regionFilterLabel = useMemo(() => dataRegionFilterLabel(locale), [locale]);
   const activeSearchQuery = searchQuery.trim();
+  const hasActiveDataRegionFilter = selectedDataRegionID !== DATA_REGION_ALL_ID;
 
   const replaceFilterUrl = ({
     locationKey = selectedLocationKey,
+    dataRegionID = selectedDataRegionID,
     nextSearchQuery = searchQuery,
     nextPage = currentPage,
     nextPageSize = pageSize,
   }: {
     locationKey?: string | null;
+    dataRegionID?: DataRegionID;
     nextSearchQuery?: string;
     nextPage?: number;
     nextPageSize?: FairPageSize;
@@ -801,6 +824,12 @@ export default function FairsListClient({
       params.delete("location");
     }
 
+    if (dataRegionID !== DATA_REGION_ALL_ID) {
+      params.set(FAIR_REGION_QUERY_PARAM, dataRegionID);
+    } else {
+      params.delete(FAIR_REGION_QUERY_PARAM);
+    }
+
     params.set(FAIR_PAGE_QUERY_PARAM, String(normalizedPage));
     params.set(FAIR_PAGE_SIZE_QUERY_PARAM, String(normalizedPageSize));
 
@@ -817,14 +846,24 @@ export default function FairsListClient({
     [currentTodayKey, fairs],
   );
 
+  const regionFilteredFairs = useMemo(
+    () =>
+      selectedDataRegionID === DATA_REGION_ALL_ID
+        ? baseFairs
+        : baseFairs.filter(
+            (fair) => dataRegionIDForCountryISO(fair.countryISO) === selectedDataRegionID,
+          ),
+    [baseFairs, selectedDataRegionID],
+  );
+
   const locationFilteredFairs = useMemo(
     () =>
       selectedLocationKey
-        ? baseFairs.filter((fair) =>
+        ? regionFilteredFairs.filter((fair) =>
             fairMatchesLocationKey(fair, selectedLocationKey),
           )
-        : baseFairs,
-    [baseFairs, selectedLocationKey],
+        : regionFilteredFairs,
+    [regionFilteredFairs, selectedLocationKey],
   );
 
   const selectedLocationLabel = useMemo(
@@ -901,7 +940,10 @@ export default function FairsListClient({
       : "";
 
   const hasSearchOrCategoryFilter =
-    tokens.length > 0 || selectedCategoryIds.length > 0 || Boolean(selectedLocationKey);
+    tokens.length > 0 ||
+    selectedCategoryIds.length > 0 ||
+    Boolean(selectedLocationKey) ||
+    hasActiveDataRegionFilter;
   const hasChangedFilters = hasSearchOrCategoryFilter;
 
   const fairDetailPath = (fairId: string) =>
@@ -942,10 +984,23 @@ export default function FairsListClient({
     replaceFilterUrl({ nextSearchQuery: "", nextPage: 1 });
   };
 
+  const clearDataRegionFilter = () => {
+    setSelectedDataRegionID(DATA_REGION_ALL_ID);
+    setCurrentPage(1);
+    replaceFilterUrl({ dataRegionID: DATA_REGION_ALL_ID, nextPage: 1 });
+  };
+
   const updateSearchQuery = (nextSearchQuery: string) => {
     setSearchQuery(nextSearchQuery);
     setCurrentPage(1);
     replaceFilterUrl({ nextSearchQuery, nextPage: 1 });
+  };
+
+  const updateDataRegionID = (nextDataRegionID: string) => {
+    const normalizedDataRegionID = normalizeDataRegionScopeID(nextDataRegionID);
+    setSelectedDataRegionID(normalizedDataRegionID);
+    setCurrentPage(1);
+    replaceFilterUrl({ dataRegionID: normalizedDataRegionID, nextPage: 1 });
   };
 
   const toggleCategory = (categoryId: string) => {
@@ -969,8 +1024,14 @@ export default function FairsListClient({
     setSearchQuery("");
     setSelectedCategoryIds([]);
     setSelectedLocationKey(null);
+    setSelectedDataRegionID(DATA_REGION_ALL_ID);
     setCurrentPage(1);
-    replaceFilterUrl({ locationKey: null, nextSearchQuery: "", nextPage: 1 });
+    replaceFilterUrl({
+      locationKey: null,
+      dataRegionID: DATA_REGION_ALL_ID,
+      nextSearchQuery: "",
+      nextPage: 1,
+    });
   };
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -997,6 +1058,22 @@ export default function FairsListClient({
           </form>
 
           <div className="flex flex-wrap items-center gap-3">
+            <label className="inline-flex min-h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm">
+              <span>{regionFilterLabel}</span>
+              <select
+                value={selectedDataRegionID}
+                onChange={(event) => updateDataRegionID(event.target.value)}
+                aria-label={regionFilterLabel}
+                className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-sm font-semibold text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+              >
+                {DATA_REGION_FILTER_OPTIONS.map((regionID) => (
+                  <option key={regionID} value={regionID}>
+                    {dataRegionLabel(regionID, locale)}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             <div className="inline-flex min-h-11 rounded-full border border-slate-200 bg-white p-1 text-sm font-semibold shadow-sm">
               <button
                 type="button"
@@ -1045,7 +1122,7 @@ export default function FairsListClient({
           </div>
         </div>
 
-        {selectedLocationKey || activeSearchQuery ? (
+        {selectedLocationKey || hasActiveDataRegionFilter || activeSearchQuery ? (
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               {copy.selectedFilters}
@@ -1059,6 +1136,19 @@ export default function FairsListClient({
                 >
                   <span className="truncate">
                     {copy.locationFilter}: {selectedLocationLabel ?? selectedLocationKey}
+                  </span>
+                  <span aria-hidden="true">x</span>
+                </button>
+              ) : null}
+
+              {hasActiveDataRegionFilter ? (
+                <button
+                  type="button"
+                  onClick={clearDataRegionFilter}
+                  className="inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  <span className="truncate">
+                    {regionFilterLabel}: {dataRegionLabel(selectedDataRegionID, locale)}
                   </span>
                   <span aria-hidden="true">x</span>
                 </button>

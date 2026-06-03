@@ -8,6 +8,7 @@ import {
   locationKeyFromSearchParams,
 } from "@/lib/website/fairLocations";
 import { fairSearchQueryFromSearchParams } from "@/lib/website/fairSearchParams";
+import { dataRegionScopeFromSearchParams } from "@/lib/website/dataRegionContract";
 import {
   fairPageFromSearchParams,
   fairPageSizeFromSearchParams,
@@ -42,6 +43,7 @@ export default async function LocalizedFairsPage({
   const resolvedSearchParams = await searchParams;
   const initialLocationKey = locationKeyFromSearchParams(resolvedSearchParams);
   const initialSearchQuery = fairSearchQueryFromSearchParams(resolvedSearchParams);
+  const initialDataRegionID = dataRegionScopeFromSearchParams(resolvedSearchParams);
   const initialPage = fairPageFromSearchParams(resolvedSearchParams);
   const initialPageSize = fairPageSizeFromSearchParams(resolvedSearchParams);
   const copy = getFairCopy(locale);
@@ -88,6 +90,7 @@ export default async function LocalizedFairsPage({
           reportCopy={reportCopy}
           initialLocationKey={initialLocationKey}
           initialSearchQuery={initialSearchQuery}
+          initialDataRegionID={initialDataRegionID}
           initialPage={initialPage}
           initialPageSize={initialPageSize}
           weatherSnapshots={weatherSnapshots}
