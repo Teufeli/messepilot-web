@@ -15,6 +15,15 @@ export type HomeLocationMapCopy = {
   fairSingular: string;
   fairPlural: string;
   viewFairs: string;
+  regionFilter: string;
+  countryFilter: string;
+  allRegions: string;
+  allCountries: string;
+  resetFilters: string;
+  filteredEmpty: string;
+  zoomIn: string;
+  zoomOut: string;
+  resetMap: string;
   dateToBeConfirmed: string;
   weatherConditionLabels: Record<WeatherConditionLabelKey, string>;
 };
@@ -31,6 +40,15 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairSingular: "fair",
     fairPlural: "fairs",
     viewFairs: "View fairs",
+    regionFilter: "Region",
+    countryFilter: "Country",
+    allRegions: "All regions",
+    allCountries: "All countries",
+    resetFilters: "Reset filters",
+    filteredEmpty: "No published fair locations match these filters.",
+    zoomIn: "Zoom in",
+    zoomOut: "Zoom out",
+    resetMap: "Reset map",
     dateToBeConfirmed: "Date to be confirmed",
     weatherConditionLabels: {
       sunny: "Sunny",
@@ -55,6 +73,15 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairSingular: "Messe",
     fairPlural: "Messen",
     viewFairs: "Messen anzeigen",
+    regionFilter: "Region",
+    countryFilter: "Land",
+    allRegions: "Alle Regionen",
+    allCountries: "Alle Länder",
+    resetFilters: "Filter zurücksetzen",
+    filteredEmpty: "Keine veröffentlichten Messestandorte passen zu diesen Filtern.",
+    zoomIn: "Vergrößern",
+    zoomOut: "Verkleinern",
+    resetMap: "Karte zurücksetzen",
     dateToBeConfirmed: "Datum noch offen",
     weatherConditionLabels: {
       sunny: "Sonnig",
@@ -79,6 +106,15 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairSingular: "展示会",
     fairPlural: "展示会",
     viewFairs: "展示会を見る",
+    regionFilter: "地域",
+    countryFilter: "国",
+    allRegions: "すべての地域",
+    allCountries: "すべての国",
+    resetFilters: "フィルターをリセット",
+    filteredEmpty: "この条件に一致する公開展示会の場所はありません。",
+    zoomIn: "拡大",
+    zoomOut: "縮小",
+    resetMap: "地図をリセット",
     dateToBeConfirmed: "日程未定",
     weatherConditionLabels: {
       sunny: "晴れ",
@@ -103,6 +139,15 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairSingular: "feria",
     fairPlural: "ferias",
     viewFairs: "Ver ferias",
+    regionFilter: "Región",
+    countryFilter: "País",
+    allRegions: "Todas las regiones",
+    allCountries: "Todos los países",
+    resetFilters: "Restablecer filtros",
+    filteredEmpty: "No hay ubicaciones de ferias publicadas que coincidan con estos filtros.",
+    zoomIn: "Acercar",
+    zoomOut: "Alejar",
+    resetMap: "Restablecer mapa",
     dateToBeConfirmed: "Fecha por confirmar",
     weatherConditionLabels: {
       sunny: "Soleado",
@@ -127,6 +172,15 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairSingular: "salon",
     fairPlural: "salons",
     viewFairs: "Voir les salons",
+    regionFilter: "Région",
+    countryFilter: "Pays",
+    allRegions: "Toutes les régions",
+    allCountries: "Tous les pays",
+    resetFilters: "Réinitialiser les filtres",
+    filteredEmpty: "Aucun lieu de salon publié ne correspond à ces filtres.",
+    zoomIn: "Zoom avant",
+    zoomOut: "Zoom arrière",
+    resetMap: "Réinitialiser la carte",
     dateToBeConfirmed: "Date à confirmer",
     weatherConditionLabels: {
       sunny: "Ensoleillé",
@@ -151,6 +205,15 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairSingular: "fiera",
     fairPlural: "fiere",
     viewFairs: "Vedi fiere",
+    regionFilter: "Regione",
+    countryFilter: "Paese",
+    allRegions: "Tutte le regioni",
+    allCountries: "Tutti i paesi",
+    resetFilters: "Reimposta filtri",
+    filteredEmpty: "Nessun luogo di fiere pubblicate corrisponde a questi filtri.",
+    zoomIn: "Ingrandisci",
+    zoomOut: "Riduci",
+    resetMap: "Reimposta mappa",
     dateToBeConfirmed: "Data da confermare",
     weatherConditionLabels: {
       sunny: "Soleggiato",
@@ -175,6 +238,15 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairSingular: "sajam",
     fairPlural: "sajmovi",
     viewFairs: "Prikaži sajmove",
+    regionFilter: "Regija",
+    countryFilter: "Zemlja",
+    allRegions: "Sve regije",
+    allCountries: "Sve zemlje",
+    resetFilters: "Resetuj filtere",
+    filteredEmpty: "Nema objavljenih lokacija sajmova koje odgovaraju ovim filterima.",
+    zoomIn: "Uvećaj",
+    zoomOut: "Umanji",
+    resetMap: "Resetuj kartu",
     dateToBeConfirmed: "Datum će biti potvrđen",
     weatherConditionLabels: {
       sunny: "Sunčano",
@@ -199,6 +271,15 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairSingular: "sajam",
     fairPlural: "sajmovi",
     viewFairs: "Prikaži sajmove",
+    regionFilter: "Regija",
+    countryFilter: "Zemlja",
+    allRegions: "Sve regije",
+    allCountries: "Sve zemlje",
+    resetFilters: "Poništi filtre",
+    filteredEmpty: "Nema objavljenih lokacija sajmova koje odgovaraju ovim filtrima.",
+    zoomIn: "Povećaj",
+    zoomOut: "Smanji",
+    resetMap: "Poništi kartu",
     dateToBeConfirmed: "Datum će biti potvrđen",
     weatherConditionLabels: {
       sunny: "Sunčano",
@@ -223,6 +304,15 @@ const homeLocationMapCopyByLocale: Record<WebsiteLocaleCode, HomeLocationMapCopy
     fairSingular: "मेला",
     fairPlural: "मेले",
     viewFairs: "मेले देखें",
+    regionFilter: "क्षेत्र",
+    countryFilter: "देश",
+    allRegions: "सभी क्षेत्र",
+    allCountries: "सभी देश",
+    resetFilters: "फ़िल्टर रीसेट करें",
+    filteredEmpty: "इन फ़िल्टर से मेल खाने वाले प्रकाशित मेले के स्थान नहीं हैं।",
+    zoomIn: "ज़ूम इन",
+    zoomOut: "ज़ूम आउट",
+    resetMap: "मानचित्र रीसेट करें",
     dateToBeConfirmed: "तारीख की पुष्टि बाकी है",
     weatherConditionLabels: {
       sunny: "धूप",
