@@ -90,6 +90,12 @@ const persistentLabelLimit = 8;
 const minMapZoom = 1;
 const maxMapZoom = 4;
 const mapZoomStep = 0.35;
+const maxAutoMapZoom = 3.6;
+const singleLocationAutoZoom = 3;
+const mapAutoFocusPadding = {
+  x: 112,
+  y: 72,
+};
 const countryIsoNumericIds: Record<string, string> = {
   AE: "784",
   AT: "040",
@@ -159,6 +165,78 @@ function clampMapPan(zoom: number, pan: MapPan): MapPan {
   return {
     x: clamp(pan.x, width - width * zoom, 0),
     y: clamp(pan.y, height - height * zoom, 0),
+  };
+}
+
+function fairLocationGroupsMatchingFilters(
+  groups: FairLocationGroup[],
+  selectedRegionID: DataRegionID,
+  selectedCountryISO: string | null,
+) {
+  return groups.filter((group) => {
+    const regionID = dataRegionIDForCountryISO(group.countryISO);
+    const matchesRegion =
+      selectedRegionID === DATA_REGION_ALL_ID || regionID === selectedRegionID;
+    const matchesCountry =
+      !selectedCountryISO || group.countryISO === selectedCountryISO;
+    return matchesRegion && matchesCountry;
+  });
+}
+
+function mapFocusForGroups(groups: FairLocationGroup[]): { zoom: number; pan: MapPan } | null {
+  const points = groups
+    .map(projectedLocation)
+    .filter((projected): projected is ProjectedLocation => Boolean(projected));
+
+  if (points.length === 0) {
+    return null;
+  }
+
+  if (points.length === 1) {
+    const [point] = points;
+    const zoom = clamp(singleLocationAutoZoom, minMapZoom, maxAutoMapZoom);
+    return {
+      zoom,
+      pan: clampMapPan(zoom, {
+        x: width / 2 - point.x * zoom,
+        y: height / 2 - point.y * zoom,
+      }),
+    };
+  }
+
+  const bounds = points.reduce(
+    (current, point) => ({
+      minX: Math.min(current.minX, point.x),
+      maxX: Math.max(current.maxX, point.x),
+      minY: Math.min(current.minY, point.y),
+      maxY: Math.max(current.maxY, point.y),
+    }),
+    {
+      minX: Number.POSITIVE_INFINITY,
+      maxX: Number.NEGATIVE_INFINITY,
+      minY: Number.POSITIVE_INFINITY,
+      maxY: Number.NEGATIVE_INFINITY,
+    },
+  );
+
+  const bboxWidth = Math.max(bounds.maxX - bounds.minX, 1);
+  const bboxHeight = Math.max(bounds.maxY - bounds.minY, 1);
+  const availableWidth = width - mapAutoFocusPadding.x * 2;
+  const availableHeight = height - mapAutoFocusPadding.y * 2;
+  const zoom = clamp(
+    Math.min(availableWidth / bboxWidth, availableHeight / bboxHeight),
+    minMapZoom,
+    maxAutoMapZoom,
+  );
+  const centerX = bounds.minX + bboxWidth / 2;
+  const centerY = bounds.minY + bboxHeight / 2;
+
+  return {
+    zoom,
+    pan: clampMapPan(zoom, {
+      x: width / 2 - centerX * zoom,
+      y: height / 2 - centerY * zoom,
+    }),
   };
 }
 
@@ -434,14 +512,11 @@ export function HomeFairLocationMap({
   );
   const filteredGroups = useMemo(
     () =>
-      groups.filter((group) => {
-        const regionID = dataRegionIDForCountryISO(group.countryISO);
-        const matchesRegion =
-          selectedRegionID === DATA_REGION_ALL_ID || regionID === selectedRegionID;
-        const matchesCountry =
-          !selectedCountryISO || group.countryISO === selectedCountryISO;
-        return matchesRegion && matchesCountry;
-      }),
+      fairLocationGroupsMatchingFilters(
+        groups,
+        selectedRegionID,
+        selectedCountryISO,
+      ),
     [groups, selectedCountryISO, selectedRegionID],
   );
   const highlightedCountries = useMemo(
@@ -478,6 +553,7 @@ export function HomeFairLocationMap({
     setSelectedRegionID(DATA_REGION_ALL_ID);
     setSelectedCountryISO(null);
     setActiveLocationKey(null);
+    resetMapView();
   };
 
   const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
@@ -532,14 +608,42 @@ export function HomeFairLocationMap({
   };
 
   const handleRegionChange = (nextRegionID: string) => {
-    setSelectedRegionID(nextRegionID as DataRegionID);
+    const regionID = nextRegionID as DataRegionID;
+    setSelectedRegionID(regionID);
     setSelectedCountryISO(null);
     setActiveLocationKey(null);
+
+    if (regionID === DATA_REGION_ALL_ID) {
+      resetMapView();
+      return;
+    }
+
+    const focus = mapFocusForGroups(
+      fairLocationGroupsMatchingFilters(groups, regionID, null),
+    );
+    if (focus) {
+      setMapZoom(focus.zoom);
+      setMapPan(focus.pan);
+    }
   };
 
   const handleCountryChange = (nextCountryISO: string) => {
-    setSelectedCountryISO(nextCountryISO || null);
+    const countryISO = nextCountryISO || null;
+    setSelectedCountryISO(countryISO);
     setActiveLocationKey(null);
+
+    if (!countryISO && selectedRegionID === DATA_REGION_ALL_ID) {
+      resetMapView();
+      return;
+    }
+
+    const focus = mapFocusForGroups(
+      fairLocationGroupsMatchingFilters(groups, selectedRegionID, countryISO),
+    );
+    if (focus) {
+      setMapZoom(focus.zoom);
+      setMapPan(focus.pan);
+    }
   };
 
   const handleLocationBlur = (event: FocusEvent<HTMLDivElement>) => {
